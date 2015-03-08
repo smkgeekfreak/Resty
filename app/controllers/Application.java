@@ -15,5 +15,8 @@ public class Application extends Controller {
         Logger.info("info requested");
         return ok(index.render("return info."));
     }
+    public static Result api() {
+        return redirect("/assets/swagger-ui/index.html");
+    }
 
 }

@@ -2,10 +2,16 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+# Global Swagger API Setup
+GET        /api-docs             controllers.ApiHelpController.getResources
+GET        /api                  controllers.Application.api()
 # Home page
-GET     /                           controllers.Application.index()
-GET     /info                       controllers.Application.info()
-GET     /users                      controllers.UserController.all()
+GET        /                     controllers.Application.index()
+GET        /info                 controllers.Application.info()
+# User API
+GET        /api-docs/user        controllers.ApiHelpController.getResource(path = "/user")
+GET        /users                controllers.UserController.all()
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET        /assets/*file         controllers.Assets.at(path="/public", file)
+

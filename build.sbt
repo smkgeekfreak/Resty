@@ -10,7 +10,8 @@ libraryDependencies ++= Seq(
   javaJdbc,
   javaEbean,
   cache,
-  javaWs
+  javaWs,
+  "com.wordnik" %% "swagger-play2" % "1.3.12"
 )
 
 
