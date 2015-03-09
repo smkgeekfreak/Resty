@@ -1,3 +1,5 @@
+import play.PlayJava
+
 name := """resty"""
 
 version := "1.0-SNAPSHOT"
