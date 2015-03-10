@@ -11,6 +11,7 @@ GET        /info                 controllers.Application.info()
 # User API
 GET        /api-docs/user        controllers.ApiHelpController.getResource(path = "/user")
 GET        /users                controllers.UserController.all()
+GET        /user:id              controllers.UserController.findById(id: Integer)
 PUT        /user                 controllers.UserController.createUser
 
 # Map static resources from the /public folder to the /assets URL path

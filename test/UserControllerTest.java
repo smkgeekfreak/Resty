@@ -1,3 +1,5 @@
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +14,7 @@ import play.Application;
 import play.GlobalSettings;
 import play.Logger;
 import play.api.http.ContentTypeOf;
+import play.db.DB;
 import play.libs.Json;
 import play.libs.ws.WS;
 import play.mvc.*;
@@ -27,6 +30,7 @@ import play.twirl.api.Content;
 import static play.test.Helpers.*;
 import static org.fest.assertions.Assertions.*;
 import controllers.UserController;
+
 
 /**
 *
@@ -46,6 +50,9 @@ public class UserControllerTest extends WithApplication {
 //
 //    FakeApplication fakeAppWithMemoryDb = fakeApplication(inMemoryDatabase("test"));
 
+    @Before
+    public void setUp() {
+    }
 
     @Test
     public void simpleCheck() {
@@ -65,15 +72,15 @@ public class UserControllerTest extends WithApplication {
         Logger.info(body);
         //assertThat(contentAsString(result)).contains("return info.");
     }
-    @Test
-    public void test_all_json() {
-        running(testServer(3333, fakeApplication(inMemoryDatabase())), HTMLUNIT, new Callback<TestBrowser>() {
-            public void invoke(TestBrowser browser) {
-                browser.goTo("http://localhost:3333");
-                assertThat(browser.pageSource()).contains("Your new application is ready");
-            }
-        });
-    }
+//    @Test
+//    public void test_all_json() {
+//        running(testServer(3333, fakeApplication(inMemoryDatabase())), HTMLUNIT, new Callback<TestBrowser>() {
+//            public void invoke(TestBrowser browser) {
+//                browser.goTo("http://localhost:3333");
+//                assertThat(browser.pageSource()).contains("Your new application is ready");
+//            }
+//        });
+//    }
     @Test
     public void testBadRoute() {
         Result result = route(fakeRequest(GET, "/users/all"));
@@ -119,7 +126,7 @@ public class UserControllerTest extends WithApplication {
         assertThat(contentType(result)).isEqualTo("application/json");
         assertThat(user.name).isEqualTo("resty");
 //        assertThat(user.id).isEqualTo(123);
-//        assertThat(respBody).contains("123");
+//        dassertThat(respBody).contains("123");
 //        assertThat(node).isInstanceOf(model.User.class);
 
     }

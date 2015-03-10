@@ -31,17 +31,37 @@ public class UserController extends Controller {
             position = 1)
     @ApiResponses(value = {
             @ApiResponse(code = Http.Status.OK, message = "Returning users", response = model.User.class),
-            @ApiResponse(code = 400, message = "Invalid endpoint"),
             @ApiResponse(code = Http.Status.BAD_REQUEST, message = "Invalid endpoint"),
             @ApiResponse(code = Http.Status.NOT_FOUND, message = "No users found")})
     public static Result all() {
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "A"));
-        users.add(new User(2, "Julie"));
-        users.add(new User(3, "Parson"));
-        users.add(new User(4, "Kasandra"));
-        Logger.info("users = " + Json.toJson(users));
-        return Results.ok(Json.toJson(users));
+//        List<User> users = new ArrayList<>();
+//        users.add(new User(1, "A"));
+//        users.add(new User(2, "Julie"));
+//        users.add(new User(3, "Parson"));
+//        users.add(new User(4, "Kasandra"));
+//        Logger.info("users = " + Json.toJson(users));
+        return Results.ok(Json.toJson(User.findAll()));
+    }
+
+    @GET
+    @Path("/user")
+    @Produces({"application/json", "application/xml"})
+    @ApiOperation(
+            value = "Return user",
+            nickname = "user",
+            notes = "Return user",
+            response = model.User.class,
+            httpMethod = "GET",
+            position = 0)
+    @ApiResponses(value = {
+            @ApiResponse(code = Http.Status.OK, message = "Returning user", response = model.User.class),
+            @ApiResponse(code = Http.Status.BAD_REQUEST, message = "Invalid endpoint"),
+            @ApiResponse(code = Http.Status.NOT_FOUND, message = "No users found")})
+    @ApiImplicitParams(@ApiImplicitParam(dataType = "int", name = "id", paramType = "path"))
+    public static Result findById(int id) {
+        User found = User.find(id);
+        Logger.info("user = " + Json.toJson(found));
+        return Results.ok(Json.toJson(found));
     }
 
     @PUT
@@ -53,7 +73,7 @@ public class UserController extends Controller {
             notes = "Creates a new users and returns it",
             response = model.User.class,
             httpMethod = "PUT",
-            position = 0)
+            position = 2)
     @ApiResponses(value =
             {
                     @ApiResponse(code = Http.Status.CREATED, message = "User Created", response = model.User.class),
@@ -70,14 +90,15 @@ public class UserController extends Controller {
         User user = null;
         Logger.info("Request to create User" + request().body().asJson());
         Logger.info("headers = " + Json.toJson(request().headers()));
+
         try {
             JsonNode json = request().body().asJson();
             user = Json.fromJson(json, User.class);
+            user.save();
         } catch (Exception e) {
             Logger.error("Problem parsing input from " + request().body().asJson() );
             return status(Http.Status.EXPECTATION_FAILED, "Could not parse input from " + request().body().asJson() );
         }
-        //return ok(Json.toJson(user));
 
         int returnCode = Http.Status.NOT_MODIFIED;
 
