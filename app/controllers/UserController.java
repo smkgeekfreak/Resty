@@ -1,6 +1,8 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import model.UserCache;
+import model.UserDAO;
 import play.*;
 import play.mvc.*;
 import play.libs.Json;
@@ -40,7 +42,7 @@ public class UserController extends Controller {
 //        users.add(new User(3, "Parson"));
 //        users.add(new User(4, "Kasandra"));
 //        Logger.info("users = " + Json.toJson(users));
-        return Results.ok(Json.toJson(User.findAll()));
+        return Results.ok(Json.toJson(UserCache.findAll()));
     }
 
     @GET
@@ -59,7 +61,7 @@ public class UserController extends Controller {
             @ApiResponse(code = Http.Status.NOT_FOUND, message = "No users found")})
     @ApiImplicitParams(@ApiImplicitParam(dataType = "int", name = "id", paramType = "path"))
     public static Result findById(int id) {
-        User found = User.find(id);
+        User found = UserCache.find(id);
         Logger.info("user = " + Json.toJson(found));
         return Results.ok(Json.toJson(found));
     }
@@ -87,18 +89,23 @@ public class UserController extends Controller {
     @Consumes("application/json")
     @ApiImplicitParams(@ApiImplicitParam(dataType = "model.User", name = "user_data", paramType = "body"))
     public static Result createUser() {
-        User user = null;
+        UserDAO user = null;
+        UserCache cache = null;
         Logger.info("Request to create User" + request().body().asJson());
         Logger.info("headers = " + Json.toJson(request().headers()));
 
-        try {
+//        try {
             JsonNode json = request().body().asJson();
-            user = Json.fromJson(json, User.class);
+            user = Json.fromJson(json, UserDAO.class);
+            cache = Json.fromJson(json, UserCache.class);
             user.save();
-        } catch (Exception e) {
-            Logger.error("Problem parsing input from " + request().body().asJson() );
-            return status(Http.Status.EXPECTATION_FAILED, "Could not parse input from " + request().body().asJson() );
-        }
+            Logger.info("attempting cache");
+            cache.save();
+            Logger.info("successful cache");
+//        } catch (Exception e) {
+//            Logger.error("Problem parsing input from " + request().body().asJson() );
+//            return status(Http.Status.EXPECTATION_FAILED, "Could not parse input from " + request().body().asJson() );
+//        }
 
         int returnCode = Http.Status.NOT_MODIFIED;
 
