@@ -147,34 +147,34 @@ public class UserControllerTest extends WithApplication {
 
     }
 
-    @Test
-    public void testRedisList() {
-        Jedis jedis = pool.getResource();
-        System.out.println("Testing Redis List");
-        jedis.lpush("tutorial-list", "Redis");
-        jedis.lpush("tutorial-list", "Mongodb");
-        jedis.lpush("tutorial-list", "Mysql");
-        // Get the stored data and print it
-        List<String> list = jedis.lrange("tutorial-list", 0, 10);
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println("Testing Stored string in redis:: " + list.get(i));
-        }
-        pool.returnResource(jedis);
-    }
+//    @Test
+//    public void testRedisList() {
+//        Jedis jedis = pool.getResource();
+//        System.out.println("Testing Redis List");
+//        jedis.lpush("tutorial-list", "Redis");
+//        jedis.lpush("tutorial-list", "Mongodb");
+//        jedis.lpush("tutorial-list", "Mysql");
+//        // Get the stored data and print it
+//        List<String> list = jedis.lrange("tutorial-list", 0, 10);
+//        for (int i = 0; i < list.size(); i++) {
+//            System.out.println("Testing Stored string in redis:: " + list.get(i));
+//        }
+//        pool.returnResource(jedis);
+//    }
 
-    @Test
-    public void testRedisHash() {
-        Jedis jedis = pool.getResource();
-        System.out.println("Testing Redis Hash UserJson");
-        Integer id = ((Long)jedis.incr("userid")).intValue();
-        User u = new User(id, "test me " + id);
-        jedis.set("user:" + id, Json.toJson(u).toString());
-        String retStr= jedis.get("user:" + id);
-        Logger.debug("Test:str " + retStr) ;
-        User retUser = Json.fromJson(Json.parse(retStr),User.class);
-        Logger.debug("Test:obj " + Json.toJson(retUser)) ;
-
-        pool.returnResource(jedis);
-    }
+//    @Test
+//    public void testRedisHash() {
+//        Jedis jedis = pool.getResource();
+//        System.out.println("Testing Redis Hash UserJson");
+//        Integer id = ((Long)jedis.incr("userid")).intValue();
+//        User u = new User(id, "test me " + id);
+//        jedis.set("user:" + id, Json.toJson(u).toString());
+//        String retStr= jedis.get("user:" + id);
+//        Logger.debug("Test:str " + retStr) ;
+//        User retUser = Json.fromJson(Json.parse(retStr),User.class);
+//        Logger.debug("Test:obj " + Json.toJson(retUser)) ;
+//
+//        pool.returnResource(jedis);
+//    }
 
 }

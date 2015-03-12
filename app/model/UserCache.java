@@ -20,9 +20,11 @@ public class UserCache extends User {
         Jedis jedis = RedisCache.getJedisCache().getResource();
 
         Logger.info("Requesting cache:" + this.name);
-        Integer id = (jedis.incr("user")).intValue();
-        User u = new User(id, "test me " + id);
-        jedis.set("user:" + id, Json.toJson(u).toString());
+        if (this.id == null) {
+            Integer id = (jedis.incr("user")).intValue();
+            this.id = id;
+        }
+        jedis.set("user:" + id, Json.toJson((User)this).toString());
         String retStr = jedis.get("user:" + id);
         Logger.info("Test:str " + retStr);
         User retUser = Json.fromJson(Json.parse(retStr), User.class);
@@ -31,12 +33,11 @@ public class UserCache extends User {
     }
 
     public static User find (Integer id) {
-        User foundUser = null;
         Jedis jedis = RedisCache.getJedisCache().getResource();
         Logger.info("Requesting cache:" + "user:"+id);
         String retStr = jedis.get("user:" + id);
         Logger.info("Found:str " + retStr);
-        foundUser = Json.fromJson(Json.parse(retStr), User.class);
+        User foundUser = Json.fromJson(Json.parse(retStr), User.class);
         Logger.info("Found:obj " + Json.toJson(foundUser));
         RedisCache.getJedisCache().returnResource(jedis);
         return foundUser;
@@ -50,9 +51,9 @@ public class UserCache extends User {
         Set<String> names=jedis.keys("user:*");
         Logger.info("Found: " + names.size());
 
-        Iterator<String> it = names.iterator();
-        while (it.hasNext()) {
-            String key = it.next();
+//        Iterator<String> it = names.iterator();
+       for (String key : names) {
+//            String key = it.next();
             Logger.debug("key: " + key);
             String retStr = jedis.get( key);
             Logger.debug("Found:str " + retStr);

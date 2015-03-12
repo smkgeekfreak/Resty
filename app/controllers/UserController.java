@@ -89,16 +89,16 @@ public class UserController extends Controller {
     @Consumes("application/json")
     @ApiImplicitParams(@ApiImplicitParam(dataType = "model.User", name = "user_data", paramType = "body"))
     public static Result createUser() {
-        UserDAO user = null;
+//        UserDAO user = null;
         UserCache cache = null;
         Logger.info("Request to create User" + request().body().asJson());
         Logger.info("headers = " + Json.toJson(request().headers()));
 
 //        try {
             JsonNode json = request().body().asJson();
-            user = Json.fromJson(json, UserDAO.class);
+//            user = Json.fromJson(json, UserDAO.class);
             cache = Json.fromJson(json, UserCache.class);
-            user.save();
+//            user.save();
             Logger.info("attempting cache");
             cache.save();
             Logger.info("successful cache");
@@ -109,16 +109,16 @@ public class UserController extends Controller {
 
         int returnCode = Http.Status.NOT_MODIFIED;
 
-        if (user != null)
+        if (cache != null)
             returnCode = Http.Status.CREATED;
         else {
             returnCode = Http.Status.FOUND;
         }
         switch (returnCode) {
             case Http.Status.NOT_MODIFIED:
-                return status(returnCode, user.name + " was not created");
+                return status(returnCode, cache.name + " was not created");
             default:
-                return status(returnCode, Json.toJson(user));
+                return status(returnCode, Json.toJson(cache));
         }
     }
 }
