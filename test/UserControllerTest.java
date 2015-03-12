@@ -1,9 +1,4 @@
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import model.User;
@@ -14,18 +9,10 @@ import play.Application;
 import play.GlobalSettings;
 import play.Logger;
 import play.api.http.ContentTypeOf;
-import play.db.DB;
 import play.libs.Json;
 import play.libs.ws.WS;
 import play.mvc.*;
 import play.test.*;
-import play.data.DynamicForm;
-import play.data.validation.ValidationError;
-import play.data.validation.Constraints.RequiredValidator;
-import play.i18n.Lang;
-import play.libs.F;
-import play.libs.F.*;
-import play.twirl.api.Content;
 
 import static play.test.Helpers.*;
 import static org.fest.assertions.Assertions.*;
@@ -33,6 +20,8 @@ import static org.fest.assertions.Assertions.*;
 import controllers.UserController;
 
 import redis.clients.jedis.*;
+import data.RedisCache;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 
 /**
@@ -40,50 +29,58 @@ import redis.clients.jedis.*;
  * If you are interested in mocking a whole application, see the wiki for more details.
  */
 public class UserControllerTest extends WithApplication {
-    //    FakeApplication fakeApp = Helpers.fakeApplication();
-//
-//    FakeApplication fakeAppWithGlobal = fakeApplication(new GlobalSettings() {
-//        @Override
-//        public void onStart(Application app) {
-//            System.out.println("Starting FakeApplication");
-//        }
-//    });
-//
-//    FakeApplication fakeAppWithMemoryDb = fakeApplication(inMemoryDatabase("test"));
-    static JedisPool pool = new JedisPool(new JedisPoolConfig(), "192.168.59.103");
+
+    private static void deleteKeys(String pattern) {
+        final String DELETE_SCRIPT_IN_LUA = "local keys = redis.call('keys', '%s')" +
+                "  for i,k in ipairs(keys) do" +
+                "    local res = redis.call('del', k)" +
+                "  end";
+        Jedis jedis = null;
+        try {
+            jedis = pool.getResource();
+
+            if (jedis == null) {
+                throw new Exception("Unable to get jedis resource!");
+            }
+            Set<String> names=jedis.keys(pattern);
+            Logger.warn("Found to delete: " + names.size());
+
+            jedis.eval(String.format(DELETE_SCRIPT_IN_LUA, pattern));
+        } catch (Exception exc) {
+            if (exc instanceof JedisConnectionException && jedis != null) {
+                pool.returnBrokenResource(jedis);
+                jedis = null;
+            }
+            throw new RuntimeException("Unable to delete pattern " + pattern);
+        } finally {
+            if (jedis != null) {
+                pool.returnResource(jedis);
+            }
+        }
+    }
+
+    static JedisPool pool;
 
     @BeforeClass
-    public static void setUp() {
-//        jedis = new Jedis("192.168.59.103");
-
-//        Jedis jedis = pool.getResource();
-
+    public static void setUpClass() {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
+        deleteKeys("test:*");
+        //pool.getResource().flushDB();
         pool.destroy();
-
     }
 
-    @Test
-    public void simpleCheck() {
-        int a = 1 + 1;
-        assertThat(a).isEqualTo(2);
+    @Before
+    public void setUp() {
+        startPlay();
+        pool = RedisCache.getCache();
     }
 
-    @Test
-    public void testEndpoint_all() {
-        Result result = UserController.all();
-        assertThat(status(result)).isEqualTo(OK);
-        assertThat(contentType(result)).isEqualTo("application/json");
-        String body = contentAsString(result);
-        JsonNode node = Json.parse(body);
-        assertThat(node.isArray()).isTrue();
-        assertThat(node.size()).isGreaterThan(1);
-//        assertThat(body).contains("");
-        Logger.info(body);
-        //assertThat(contentAsString(result)).contains("return info.");
+    @After
+    public void tearDown() {
+        stopPlay();
     }
 
     //    @Test
@@ -127,11 +124,11 @@ public class UserControllerTest extends WithApplication {
 
 
     @Test
-    public void testPUT() {
+    public void testPOST() {
 //        String body = "{\"name\":\"resty\", \"id\": 123}";
         String body = "{\"name\":\"resty\"}";
         JsonNode json = Json.parse(body);
-        FakeRequest request = new FakeRequest(PUT, "/user").withHeader("Content-Type", ContentType.APPLICATION_JSON.toString()).withJsonBody(json);
+        FakeRequest request = new FakeRequest(POST, "/user").withHeader("Content-Type", ContentType.APPLICATION_JSON.toString()).withJsonBody(json);
         Result result = route(request);
         assertThat(status(result)).isEqualTo(CREATED);
 //        String respBody = contentAsString(result);
@@ -144,37 +141,23 @@ public class UserControllerTest extends WithApplication {
 //        assertThat(user.id).isEqualTo(123);
 //        dassertThat(respBody).contains("123");
 //        assertThat(node).isInstanceOf(model.User.class);
+//        RedisCache.deleteKeys("test:*");
 
     }
 
-//    @Test
-//    public void testRedisList() {
-//        Jedis jedis = pool.getResource();
-//        System.out.println("Testing Redis List");
-//        jedis.lpush("tutorial-list", "Redis");
-//        jedis.lpush("tutorial-list", "Mongodb");
-//        jedis.lpush("tutorial-list", "Mysql");
-//        // Get the stored data and print it
-//        List<String> list = jedis.lrange("tutorial-list", 0, 10);
-//        for (int i = 0; i < list.size(); i++) {
-//            System.out.println("Testing Stored string in redis:: " + list.get(i));
-//        }
-//        pool.returnResource(jedis);
-//    }
-
-//    @Test
-//    public void testRedisHash() {
-//        Jedis jedis = pool.getResource();
-//        System.out.println("Testing Redis Hash UserJson");
-//        Integer id = ((Long)jedis.incr("userid")).intValue();
-//        User u = new User(id, "test me " + id);
-//        jedis.set("user:" + id, Json.toJson(u).toString());
-//        String retStr= jedis.get("user:" + id);
-//        Logger.debug("Test:str " + retStr) ;
-//        User retUser = Json.fromJson(Json.parse(retStr),User.class);
-//        Logger.debug("Test:obj " + Json.toJson(retUser)) ;
-//
-//        pool.returnResource(jedis);
-//    }
+    @Test
+    public void testEndpoint_all() {
+        Result result = UserController.all();
+        assertThat(status(result)).isEqualTo(OK);
+        assertThat(contentType(result)).isEqualTo("application/json");
+        String body = contentAsString(result);
+        JsonNode node = Json.parse(body);
+        assertThat(node.isArray()).isTrue();
+        assertThat(node.size()).isGreaterThanOrEqualTo(1);
+//        assertThat(body).contains("");
+        Logger.info(body);
+//        RedisCache.deleteKeys("test:*");
+        //assertThat(contentAsString(result)).contains("return info.");
+    }
 
 }

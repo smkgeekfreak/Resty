@@ -1,6 +1,7 @@
 import play.Application;
 import play.GlobalSettings;
 import play.Logger;
+import play.Play;
 import play.libs.*;
 
 import java.util.*;
@@ -10,6 +11,19 @@ public class Global extends GlobalSettings {
 //    public JedisPool pool ;
 
     public void onStart(Application app) {
+
+        String prefix = "";
+        if (Play.application().isTest()) {
+            Logger.info("MODE = TEST");
+            prefix = Play.application().configuration().getString("jedis.key.prefix.test");
+        } else if (Play.application().isDev()) {
+            Logger.info("MODE = DEV");
+        } else if (Play.application().isProd()) {
+            Logger.info("MODE = PROD");
+        } else {
+            Logger.info("MODE = UNKNOWN");
+        }
+        Logger.info("Redis key prefix = " + prefix);
 
 //        pool = new JedisPool(new JedisPoolConfig(), "192.168.59.103");
 //        Jedis jedis = pool.getResource();
