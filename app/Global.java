@@ -3,8 +3,12 @@ import play.GlobalSettings;
 import play.Logger;
 import play.Play;
 import play.libs.*;
+import play.mvc.*;
 
 import java.util.*;
+
+import play.mvc.Http;
+import play.mvc.Result;
 import redis.clients.jedis.*;
 
 public class Global extends GlobalSettings {
@@ -37,5 +41,17 @@ public class Global extends GlobalSettings {
     public void onStop(Application app) {
 //        Logger.info("Global Redis Connection stop");
 //        pool.destroy();
+    }
+
+//    @Override
+//    public F.Promise<Result> onHandlerNotFound(Http.RequestHeader requestHeader) {
+//        Logger.info(requestHeader.toString());
+//        System.out.println("no handler found for... " + requestHeader.path() + " for " + requestHeader.uri());
+//        return F.Promise.pure(controllers.EdgeProxy.serviceRequest());
+//    }
+    @Override
+    public F.Promise<Result> onBadRequest(Http.RequestHeader requestHeader, String error) {
+        Logger.info("Bad request:" + requestHeader.toString());
+        return F.Promise.pure(Results.badRequest(requestHeader.toString()));
     }
 }

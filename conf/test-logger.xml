@@ -6,7 +6,9 @@
     </appender>
 
     <logger name="play" level="ERROR" />
-    <logger name="application" level="DEBUG" />
+    <logger name="application" level="VERBOSE" />
+    <logger name="swagger" level="ERROR" />
+    <logger name="com.wordnik.swagger" level="ERROR" />
 
     <root level="ERROR">
         <appender-ref ref="STDOUT" />

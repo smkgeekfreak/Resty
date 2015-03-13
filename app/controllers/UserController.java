@@ -93,42 +93,36 @@ public class UserController extends Controller {
     @ApiResponses(value =
             {
                     @ApiResponse(code = Http.Status.CREATED, message = "User Created", response = model.User.class),
-                    @ApiResponse(code = Http.Status.FOUND, message = "User already exists"),
                     @ApiResponse(code = Http.Status.BAD_REQUEST, message = "Invalid endpoint"),
-                    @ApiResponse(code = Http.Status.NOT_FOUND, message = "No users found"),
                     @ApiResponse(code = Http.Status.EXPECTATION_FAILED, message = "Could not parse input"),
             }
     )
-    @BodyParser.Of(BodyParser.Json.class)
     @Consumes("application/json")
+    @BodyParser.Of(BodyParser.Json.class)
     @ApiImplicitParams(@ApiImplicitParam(dataType = "model.User", name = "user_data", paramType = "body"))
     public static Result create() {
-        UserCache cache = null;
-        Logger.info("Request to create User" + request().body().asJson());
-        Logger.info("headers = " + Json.toJson(request().headers()));
+        try {
+            int returnCode = OK;
+            Logger.info("Request to create User" + request().body().asJson());
+            Logger.info("headers = " + Json.toJson(request().headers()));
 
+            JsonNode json = request().body().asJson();
 
-//        try {
-        JsonNode json = request().body().asJson();
-//            user = Json.fromJson(json, UserDAO.class);
-        cache = Json.fromJson(json, UserCache.class);
-//            user.save();
-        Logger.info("attempting cache");
-        int returnCode = Http.Status.NOT_MODIFIED;
+            if(json.findPath("name").asText().isEmpty() ) {
+                return badRequest("Could not parse data");
+            }
+            UserCache dao = Json.fromJson(json, UserCache.class);
+            Logger.debug("attempting cache:" + Json.toJson(dao));
+            if (dao.save()) {
+                returnCode = Http.Status.CREATED;
+            }
 
-        if (cache.save())
-            returnCode = Http.Status.CREATED;
-        else
-            returnCode = Http.Status.OK;
-
-        Logger.info("successful cache");
-//        } catch (Exception e) {
-//            Logger.error("Problem parsing input from " + request().body().asJson() );
-//            return status(Http.Status.EXPECTATION_FAILED, "Could not parse input from " + request().body().asJson() );
-//        }
-
-        return status(returnCode, Json.toJson(cache));
-//        }
+            response().setHeader("Location", "/user/" + dao.id);
+            return status(returnCode, Json.toJson(dao));
+        } catch( Exception e ) {
+            Logger.error("Caused: "+ Json.toJson(e.getMessage()));
+            return status(EXPECTATION_FAILED);
+        }
     }
 
     @PUT
@@ -136,10 +130,10 @@ public class UserController extends Controller {
     @Produces({"application/json", "application/xml"})
     @ApiOperation(
             value = "Update a specific user",
-            nickname = "put _user",
+            nickname = "put ",
             notes = "Creates a new users and returns it",
             response = model.User.class,
-            httpMethod = "POST",
+            httpMethod = "PUT",
             position = 2)
     @ApiResponses(value =
             {
@@ -154,7 +148,7 @@ public class UserController extends Controller {
     @Consumes("application/json")
     @ApiImplicitParams({@ApiImplicitParam(dataType = "model.User", name = "user_data", paramType = "body"),
             @ApiImplicitParam(dataType = "int", name = "id", paramType = "path")})
-    public static Result update(int id) {
+   public static Result update(int id) {
 //        UserCache cache = null;
 //        Logger.info("Request to create User" + request().body().asJson());
 //        Logger.info("headers = " + Json.toJson(request().headers()));

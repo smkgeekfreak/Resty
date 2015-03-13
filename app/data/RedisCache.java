@@ -18,22 +18,22 @@ public class RedisCache {
     public static JedisPool getCache() {
         // TODO: move this prefix code out
         if (Play.application().isTest()) {
-            Logger.info("MODE = TEST");
+            Logger.debug("MODE = TEST");
             ENV_PREFIX = Play.application().configuration().getString("jedis.key.prefix.test");
         } else if (Play.application().isDev()) {
-            Logger.info("MODE = DEV");
+            Logger.debug("MODE = DEV");
         } else if (Play.application().isProd()) {
-            Logger.info("MODE = PROD");
+            Logger.debug("MODE = PROD");
         } else {
-            Logger.info("MODE = UNKNOWN");
+            Logger.debug("MODE = UNKNOWN");
         }
-        Logger.info("Redis key prefix = " + ENV_PREFIX);
+        Logger.debug("Redis key prefix = " + ENV_PREFIX);
 
         if (POOL == null || POOL.isClosed()) {
             String host = Play.application().configuration().getString("jedis.host");
-            Logger.info("Initializting cache:" + host);
-            POOL = new JedisPool(new JedisPoolConfig(), host);
-            //POOL = new JedisPool(new JedisPoolConfig(), "192.168.59.103");
+            int port = Play.application().configuration().getInt("jedis.port");
+            Logger.info("Initializting cache:" + host +":" + port);
+            POOL = new JedisPool(new JedisPoolConfig(), host, port );
         }
         return POOL;
     }

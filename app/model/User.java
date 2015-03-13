@@ -8,7 +8,6 @@ import javax.sql.DataSource;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 import play.Logger;
-import play.data.validation.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import play.db.*;
 import play.libs.Json;
@@ -16,9 +15,15 @@ import play.libs.Json;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ApiModel("User")
 public class User {
-    @ApiModelProperty(required=false)
+    @ApiModelProperty(
+            required = false,
+            notes = "Unique id of the user"
+    )
     public Integer id;
-    @ApiModelProperty(required=true)
+    @ApiModelProperty(
+            required = true,
+            notes = "Name of the user"
+    )
     public String name;
 
     public User(final Integer id, final String name) {
@@ -27,9 +32,7 @@ public class User {
     }
 
     public User() {
-        Logger.info("User constructor");
     }
-
 //    public void save() {
 //
 //        try {

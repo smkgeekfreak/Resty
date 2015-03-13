@@ -21,46 +21,49 @@ public class UserCache extends User {
     /**
      * Save current state to cache. If the id is null a new id will be generated from the
      * sequence and used to create a new record. If a record with the id already exists it
-     * will be update with the current state of all information.
+     * will be update with the current state of all debugrmation.
      * @return true if already existed, false if new record was created
      */
     public boolean save() {
         Jedis jedis = RedisCache.getCache().getResource();
-        Integer newId = this.id;
-        boolean createNew = !(jedis.exists(ID_KEY + id));
-        Logger.info("Requesting cache:" + this.name);
+        //Integer newId = this.id;
+        boolean createNew = !(jedis.exists(ID_KEY + this.id));
+        Logger.debug("Requesting cache:" + this.name);
         if (this.id == null || createNew ) {
-            newId = (jedis.incr(ID_SEQ)).intValue();
-            this.id = newId;
+            this.id = (jedis.incr(ID_SEQ)).intValue();
+            Logger.info("Created new id: " +this.id);
+            //this.id = newId;
+        } else {
+            Logger.info("Didn't create new id: already had -" +this.id);
         }
 
-        jedis.set(ID_KEY + newId, Json.toJson(this).toString());
-        String retStr = jedis.get(ID_KEY + newId);
-        Logger.info("Test:str " + retStr);
+        jedis.set(ID_KEY + this.id, Json.toJson(this).toString());
+        String retStr = jedis.get(ID_KEY + this.id);
+        Logger.debug("Test:str " + retStr);
         User retUser = Json.fromJson(Json.parse(retStr), User.class);
-        Logger.info("Test:obj " + Json.toJson(retUser));
+        Logger.debug("Test:obj " + Json.toJson(retUser));
         RedisCache.getCache().returnResource(jedis);
         return createNew;
     }
 
     public static User find (Integer key) {
         Jedis jedis = RedisCache.getCache().getResource();
-        Logger.info("Requesting cache:" + ID_KEY+key);
+        Logger.debug("Requesting cache:" + ID_KEY+key);
         String retStr = jedis.get(ID_KEY + key);
-        Logger.info("Found:str " + retStr);
+        Logger.debug("Found:str " + retStr);
         User foundUser = Json.fromJson(Json.parse(retStr), User.class);
-        Logger.info("Found:obj " + Json.toJson(foundUser));
+        Logger.debug("Found:obj " + Json.toJson(foundUser));
         RedisCache.getCache().returnResource(jedis);
         return foundUser;
     }
 
     public static User find (String name) {
         Jedis jedis = RedisCache.getCache().getResource();
-        Logger.info("Requesting cache:" + NAME_KEY+name);
+        Logger.debug("Requesting cache:" + NAME_KEY+name);
         String retStr = jedis.get(NAME_KEY + name);
-        Logger.info("Found:str " + retStr);
+        Logger.debug("Found:str " + retStr);
         User foundUser = Json.fromJson(Json.parse(retStr), User.class);
-        Logger.info("Found:obj " + Json.toJson(foundUser));
+        Logger.debug("Found:obj " + Json.toJson(foundUser));
         RedisCache.getCache().returnResource(jedis);
         return foundUser;
     }
@@ -69,14 +72,12 @@ public class UserCache extends User {
 
         List<User> users = new ArrayList<>();
         Jedis jedis = RedisCache.getCache().getResource();
-        Logger.info("Requesting finding all " + ID_KEY);
+        Logger.debug("Requesting finding all " + ID_KEY);
         Set<String> names=jedis.keys(ID_KEY +"*");
-        Logger.info("Found: " + names.size());
+        Logger.debug("Found: " + names.size());
 
-//        Iterator<String> it = names.iterator();
        for (String key : names) {
-//            String key = it.next();
-            Logger.info("key: " + key);
+            Logger.debug("key: " + key);
             String retStr = jedis.get( key);
             Logger.debug("Found:str " + retStr);
             User foundUser = Json.fromJson(Json.parse(retStr), User.class);
