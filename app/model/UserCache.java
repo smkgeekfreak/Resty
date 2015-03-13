@@ -18,21 +18,29 @@ public class UserCache extends User {
     static String NAME_KEY = RedisCache.ENV_PREFIX +"user_name:";
     //
 
-    public void save() {
+    /**
+     * Save current state to cache. If the id is null a new id will be generated from the
+     * sequence and used to create a new record. If a record with the id already exists it
+     * will be update with the current state of all information.
+     * @return true if already existed, false if new record was created
+     */
+    public boolean save() {
         Jedis jedis = RedisCache.getCache().getResource();
-
+        Integer newId = this.id;
+        boolean createNew = !(jedis.exists(ID_KEY + id));
         Logger.info("Requesting cache:" + this.name);
-        if (this.id == null) {
-            Integer id = (jedis.incr(ID_SEQ)).intValue();
-            this.id = id;
+        if (this.id == null || createNew ) {
+            newId = (jedis.incr(ID_SEQ)).intValue();
+            this.id = newId;
         }
 
-        jedis.set(ID_KEY + id, Json.toJson(this).toString());
-        String retStr = jedis.get(ID_KEY + id);
+        jedis.set(ID_KEY + newId, Json.toJson(this).toString());
+        String retStr = jedis.get(ID_KEY + newId);
         Logger.info("Test:str " + retStr);
         User retUser = Json.fromJson(Json.parse(retStr), User.class);
         Logger.info("Test:obj " + Json.toJson(retUser));
         RedisCache.getCache().returnResource(jedis);
+        return createNew;
     }
 
     public static User find (Integer key) {

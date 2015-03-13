@@ -109,32 +109,28 @@ public class UserController extends Controller {
 
 
 //        try {
-            JsonNode json = request().body().asJson();
+        JsonNode json = request().body().asJson();
 //            user = Json.fromJson(json, UserDAO.class);
-            cache = Json.fromJson(json, UserCache.class);
+        cache = Json.fromJson(json, UserCache.class);
 //            user.save();
-            Logger.info("attempting cache");
-            cache.save();
-            Logger.info("successful cache");
+        Logger.info("attempting cache");
+        int returnCode = Http.Status.NOT_MODIFIED;
+
+        if (cache.save())
+            returnCode = Http.Status.CREATED;
+        else
+            returnCode = Http.Status.OK;
+
+        Logger.info("successful cache");
 //        } catch (Exception e) {
 //            Logger.error("Problem parsing input from " + request().body().asJson() );
 //            return status(Http.Status.EXPECTATION_FAILED, "Could not parse input from " + request().body().asJson() );
 //        }
 
-        int returnCode = Http.Status.NOT_MODIFIED;
-
-        if (cache != null)
-            returnCode = Http.Status.CREATED;
-        else {
-            returnCode = Http.Status.FOUND;
-        }
-        switch (returnCode) {
-            case Http.Status.NOT_MODIFIED:
-                return status(returnCode, cache.name + " was not created");
-            default:
-                return status(returnCode, Json.toJson(cache));
-        }
+        return status(returnCode, Json.toJson(cache));
+//        }
     }
+
     @PUT
     @Path("/user")
     @Produces({"application/json", "application/xml"})
@@ -157,7 +153,7 @@ public class UserController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     @Consumes("application/json")
     @ApiImplicitParams({@ApiImplicitParam(dataType = "model.User", name = "user_data", paramType = "body"),
-                       @ApiImplicitParam(dataType = "int", name = "id", paramType = "path")})
+            @ApiImplicitParam(dataType = "int", name = "id", paramType = "path")})
     public static Result update(int id) {
 //        UserCache cache = null;
 //        Logger.info("Request to create User" + request().body().asJson());
