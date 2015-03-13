@@ -17,7 +17,7 @@ import com.wordnik.swagger.annotations.*;
 
 import javax.ws.rs.*;
 
-@Api(value = "/user", description = "creation and administration of users")
+@Api(value = "/users", description = "creation and administration of users")
 public class UserController extends Controller {
 
     @GET
@@ -34,15 +34,15 @@ public class UserController extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = Http.Status.OK, message = "Returning users", response = model.User.class),
             @ApiResponse(code = Http.Status.NOT_FOUND, message = "No users found")}) //TODO: doesn't do this right now
-    public static Result all() {
+    public static Result findAll() {
         return Results.ok(Json.toJson(UserCache.findAll()));
     }
 
     @GET
-    @Path("/user")
+    @Path("/users")
     @Produces({"application/json", "application/xml"})
     @ApiOperation(
-            value = "Return user resouce based on name",
+            value = "Return user resource based on name",
             nickname = "user",
             notes = "Return user",
             response = model.User.class,
@@ -60,7 +60,7 @@ public class UserController extends Controller {
     }
 
     @GET
-    @Path("/user")
+    @Path("/users")
     @Produces({"application/json", "application/xml"})
     @ApiOperation(
             value = "Return user",
@@ -76,12 +76,14 @@ public class UserController extends Controller {
     @ApiImplicitParams(@ApiImplicitParam(dataType = "int", name = "id", paramType = "path"))
     public static Result findById(int id) {
         User found = UserCache.find(id);
+        if( found == null )
+            return notFound("Customer could not be found for ("+id+")");
         Logger.info("user = " + Json.toJson(found));
         return Results.ok(Json.toJson(found));
     }
 
     @POST
-    @Path("/user")
+    @Path("/users")
     @Produces({"application/json", "application/xml"})
     @ApiOperation(
             value = "Create a user based on name",
@@ -117,7 +119,7 @@ public class UserController extends Controller {
                 returnCode = Http.Status.CREATED;
             }
 
-            response().setHeader("Location", "/user/" + dao.id);
+            response().setHeader("Location", "/users/" + dao.id);
             return status(returnCode, Json.toJson(dao));
         } catch( Exception e ) {
             Logger.error("Caused: "+ Json.toJson(e.getMessage()));
@@ -126,7 +128,7 @@ public class UserController extends Controller {
     }
 
     @PUT
-    @Path("/user")
+    @Path("/users")
     @Produces({"application/json", "application/xml"})
     @ApiOperation(
             value = "Update a specific user",

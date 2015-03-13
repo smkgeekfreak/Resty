@@ -8,14 +8,16 @@ GET        /api                  controllers.Application.api()
 # Home page
 GET        /                     controllers.Application.index()
 GET        /info                 controllers.Application.info()
-# User API
-GET        /api-docs/user        controllers.ApiHelpController.getResource(path = "/user")
-GET        /users                controllers.UserController.all
-GET        /user/:id             controllers.UserController.findById(id: Integer)
+# Users API
+GET        /api-docs/users        controllers.ApiHelpController.getResource(path = "/users")
+GET        /users                 controllers.UserController.findAll
+GET        /users/:id             controllers.UserController.findById(id: Integer)
 #GET        /user/:name           controllers.UserController.findByName(name: String)
-POST       /user                 controllers.UserController.create
+POST       /users                 controllers.UserController.create
 #PUT        /user/:id             controllers.UserController.update(id: Integer)
-
+# Customers API
+GET        /api-docs/customers   controllers.ApiHelpController.getResource(path = "/customers")
+GET        /customers            controllers.CustomerController.findAll()
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file         controllers.Assets.at(path="/public", file)
 

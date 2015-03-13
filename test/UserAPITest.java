@@ -1,29 +1,28 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.UserController;
+import data.RedisCache;
 import model.User;
 import org.apache.http.entity.ContentType;
 import org.junit.*;
-
 import play.Logger;
 import play.libs.Json;
 import play.libs.ws.WS;
-import play.mvc.*;
-import play.test.*;
+import play.mvc.Result;
+import play.test.FakeRequest;
+import play.test.WithApplication;
+import util.Redis;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static play.mvc.Http.Status.*;
+import static play.mvc.Http.Status.CREATED;
+import static play.mvc.Http.Status.OK;
 import static play.test.Helpers.*;
-import static org.fest.assertions.Assertions.*;
-
-import data.RedisCache;
-import util.*;
 
 /**
- * Simple (JUnit) tests that can call all parts of a play app.
- * If you are interested in mocking a whole application, see the wiki for more details.
+ * Created by mbp-sm on 3/13/15.
  */
-
 @FixMethodOrder
-public class UserControllerTest extends WithApplication {
-
+public class UserAPITest extends WithApplication{
 
     @BeforeClass
     public static void setUpClass() {
@@ -47,36 +46,7 @@ public class UserControllerTest extends WithApplication {
         stopPlay();
     }
 
-    @Test
-    public void testBadRoute() {
-        Result result = route(fakeRequest(GET, "/users/invalid"));
-        assertThat(status(result)).isEqualTo(BAD_REQUEST);
-    }
 
-    @Test
-    public void testInvalidInServer() {
-        running(testServer(3333), () -> {
-            assertThat(
-                    WS.url("http://localhost:3333/invalid").get().get(5000).getStatus()
-            ).isEqualTo(NOT_FOUND);
-        });
-    }
-
-    @Test
-    public void testInServer() {
-        running(testServer(3333), () -> {
-            assertThat(
-                    WS.url("http://localhost:3333/info").get().get(5000).getStatus()
-            ).isEqualTo(OK);
-        });
-    }
-
-    //    @Test
-//    public void testCreateRoute() {
-//        Result result = route(fakeRequest(PUT, "/users"));
-//        assertThat(result).isNotNull();
-//        assertThat(result).isInstanceOf(model.User.class);
-//    }
     @Test
     public void testPOSTInvalidData() {
         Logger.debug("-----------------------------------------------");
@@ -96,7 +66,7 @@ public class UserControllerTest extends WithApplication {
 //        Logger.debug(new Object() {
 //        }.getClass().getEnclosingMethod().getName());
 //        Logger.debug("-----------------------------------------------");
-//        FakeRequest request = new FakeRequest(POST, "/users").withHeader("Content-Type", ContentType.TEXT_HTML.toString());
+//        FakeRequest request = new FakeRequest(POST, "/user").withHeader("Content-Type", ContentType.TEXT_HTML.toString());
 //        Result result = route(request);
 //        assertThat(status(result)).isEqualTo(OK);
 //        JsonNode node = Json.parse(contentAsString(result));
@@ -205,30 +175,6 @@ public class UserControllerTest extends WithApplication {
         assertThat(node.isArray()).isTrue();
         assertThat(node.size()).isGreaterThanOrEqualTo(1);
         Logger.info(body);
-    }
-
-    @Test
-    public void testEndpointFindById() {
-        Logger.debug("-----------------------------------------------");
-        Logger.debug(new Object() {
-        }.getClass().getEnclosingMethod().getName());
-        Logger.debug("-----------------------------------------------");
-        Result result = UserController.findById(1);
-        assertThat(status(result)).isEqualTo(OK);
-        assertThat(contentType(result)).isEqualTo("application/json");
-        String body = contentAsString(result);
-        JsonNode node = Json.parse(body);
-        Logger.debug("Found:" + node);
-    }
-
-    @Test
-    public void testEndpointFindByIdNotFound() {
-        Logger.debug("-----------------------------------------------");
-        Logger.debug(new Object() {
-        }.getClass().getEnclosingMethod().getName());
-        Logger.debug("-----------------------------------------------");
-        Result result = UserController.findById(98765);
-        assertThat(status(result)).isEqualTo(NOT_FOUND);
     }
 
     @Test

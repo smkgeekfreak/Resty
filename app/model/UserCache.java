@@ -1,6 +1,7 @@
 package model;
 
 import data.RedisCache;
+import org.h2.util.StringUtils;
 import play.Logger;
 import play.libs.Json;
 import redis.clients.jedis.Jedis;
@@ -31,10 +32,10 @@ public class UserCache extends User {
         Logger.debug("Requesting cache:" + this.name);
         if (this.id == null || createNew ) {
             this.id = (jedis.incr(ID_SEQ)).intValue();
-            Logger.info("Created new id: " +this.id);
+            Logger.info("Created new id: " + this.id);
             //this.id = newId;
         } else {
-            Logger.info("Didn't create new id: already had -" +this.id);
+            Logger.info("Didn't create new id: already had -" + this.id);
         }
 
         jedis.set(ID_KEY + this.id, Json.toJson(this).toString());
@@ -48,8 +49,11 @@ public class UserCache extends User {
 
     public static User find (Integer key) {
         Jedis jedis = RedisCache.getCache().getResource();
-        Logger.debug("Requesting cache:" + ID_KEY+key);
+        Logger.debug("Requesting cache:" + ID_KEY + key);
         String retStr = jedis.get(ID_KEY + key);
+        if (StringUtils.isNullOrEmpty(retStr)){
+            return null;
+        }
         Logger.debug("Found:str " + retStr);
         User foundUser = Json.fromJson(Json.parse(retStr), User.class);
         Logger.debug("Found:obj " + Json.toJson(foundUser));
@@ -59,9 +63,12 @@ public class UserCache extends User {
 
     public static User find (String name) {
         Jedis jedis = RedisCache.getCache().getResource();
-        Logger.debug("Requesting cache:" + NAME_KEY+name);
+        Logger.debug("Requesting cache:" + NAME_KEY + name);
         String retStr = jedis.get(NAME_KEY + name);
         Logger.debug("Found:str " + retStr);
+        if (StringUtils.isNullOrEmpty(retStr)){
+            return null;
+        }
         User foundUser = Json.fromJson(Json.parse(retStr), User.class);
         Logger.debug("Found:obj " + Json.toJson(foundUser));
         RedisCache.getCache().returnResource(jedis);
@@ -69,7 +76,6 @@ public class UserCache extends User {
     }
 
     public static List<User> findAll () {
-
         List<User> users = new ArrayList<>();
         Jedis jedis = RedisCache.getCache().getResource();
         Logger.debug("Requesting finding all " + ID_KEY);

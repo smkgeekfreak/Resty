@@ -18,12 +18,12 @@ public class RedisCache {
     public static JedisPool getCache() {
         // TODO: move this prefix code out
         if (Play.application().isTest()) {
-            Logger.debug("MODE = TEST");
+            Logger.debug("CACHE MODE = TEST Y");
             ENV_PREFIX = Play.application().configuration().getString("jedis.key.prefix.test");
         } else if (Play.application().isDev()) {
-            Logger.debug("MODE = DEV");
+            Logger.debug("CACHE MODE = DEV");
         } else if (Play.application().isProd()) {
-            Logger.debug("MODE = PROD");
+            Logger.debug("CACHE MODE = PROD");
         } else {
             Logger.debug("MODE = UNKNOWN");
         }

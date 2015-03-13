@@ -17,6 +17,6 @@ libraryDependencies ++= Seq(
   "redis.clients" % "jedis" % "2.6.2"
 )
 
-javaOptions in Test += "-Dlogger.file=conf/test-logger.xml"
+javaOptions in Test += "-Dlogger.resource=test-logger.xml"
 
 fork in run := true
