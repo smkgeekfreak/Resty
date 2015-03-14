@@ -51,7 +51,7 @@ public class CustomerController extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = Http.Status.OK, message = "Returning customer", response = Customer.class),
             @ApiResponse(code = Http.Status.BAD_REQUEST, message = "Invalid endpoint"),
-            @ApiResponse(code = Http.Status.NOT_FOUND, message = "No customer found")})
+            @ApiResponse(code = Http.Status.NOT_FOUND, message = "Customer could not be found for (id)")})
     @ApiImplicitParams(@ApiImplicitParam(dataType = "int", name = "id", paramType = "path"))
     public static Result findById(Long id) {
         Customer found = CacheDAO.find(id);

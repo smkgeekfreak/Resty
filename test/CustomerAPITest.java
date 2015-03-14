@@ -81,4 +81,24 @@ public class CustomerAPITest extends CustomerAPIBase{
             assertThat(retCustomer.uid).isEqualTo(dao.uid);
         });
     }
+
+    @Test
+    public void testGETCustomerNotExists(){
+        Logger.debug("------------------------");
+        Logger.debug(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+        Logger.debug("-------------------------");
+
+        long invalidUid = 132131424L;
+        running(testServer(TEST_SERVER_PORT), () -> {
+            WSResponse wsResponse =WS.url("http://localhost:"+TEST_SERVER_PORT+"/customers/"+invalidUid).get().get(2000);
+            // Assert Response Status
+            assertThat(wsResponse.getStatus()).isEqualTo(NOT_FOUND);
+            // Assert Content Type is HTML
+            assertThat(wsResponse.getHeader("Content-Type")).isEqualToIgnoringCase(ContentType.TEXT_PLAIN.withCharset("UTF-8").toString());
+            // Assert Response Body has content
+            assertThat(wsResponse.getBody()).contains("Customer could not be found");
+
+        });
+    }
 }

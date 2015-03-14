@@ -1,7 +1,10 @@
+import jdk.nashorn.internal.runtime.regexp.joni.Regex;
+import org.apache.commons.lang3.StringUtils;
 import play.Application;
 import play.GlobalSettings;
 import play.Logger;
 import play.Play;
+import play.api.mvc.Handler;
 import play.libs.*;
 import play.mvc.*;
 
@@ -53,5 +56,14 @@ public class Global extends GlobalSettings {
     public F.Promise<Result> onBadRequest(Http.RequestHeader requestHeader, String error) {
         Logger.info("Bad request:" + requestHeader.toString());
         return F.Promise.pure(Results.badRequest(requestHeader.toString()));
+    }
+    @Override
+    public Handler onRouteRequest(Http.RequestHeader requestHeader) {
+//        Logger.debug("ACCEPTS HEADER" + Json.toJson(requestHeader.acceptedTypes()));
+        Logger.debug("REQUEST HEADERS:" + requestHeader.acceptedTypes());
+
+//        Logger.debug("before each request... " + requestHeader.host() + " for " + requestHeader.uri());
+        //return (play.api.mvc.Handler) controllers.EdgeProxy.serviceRequest();
+        return super.onRouteRequest(requestHeader);
     }
 }
