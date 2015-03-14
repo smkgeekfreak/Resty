@@ -46,4 +46,39 @@ public class CustomerAPITest extends CustomerAPIBase{
             assertThat(body.size()).isGreaterThanOrEqualTo(1);
         });
     }
+    @Test
+    public void testGETCustomerExists(){
+        Logger.debug("------------------------");
+        Logger.debug(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+        Logger.debug("-------------------------");
+
+        Customer postBody = new Customer(
+                -1L,
+                "Test Insert Customer",
+                "888-888-9999",
+                "Sosa, Sammy",
+                "RTY9803-3234"
+        );
+        model.customer.CacheDAO dao = Json.fromJson(Json.toJson(postBody), model.customer.CacheDAO.class);
+        dao.save();
+
+        running(testServer(TEST_SERVER_PORT), () -> {
+            WSResponse wsResponse =WS.url("http://localhost:"+TEST_SERVER_PORT+"/customers/"+dao.uid).get().get(2000);
+            // Assert Response Status
+            assertThat(wsResponse.getStatus()).isEqualTo(OK);
+            // Assert Content Type is JSON
+            assertThat(wsResponse.getHeader("Content-Type")).isEqualToIgnoringCase(ContentType.APPLICATION_JSON.toString());
+            // Assert Response Body has content
+            assertThat(wsResponse.getBody()).isNotEmpty();
+            // Deserialize body
+            JsonNode body = Json.parse(wsResponse.getBody());
+            Logger.debug("Customer returned:" + body);
+            Customer retCustomer = Json.fromJson(body,Customer.class);
+            // Assert object can be created from JSON
+            assertThat(retCustomer).isNotNull();
+            // Assert valid uid returned
+            assertThat(retCustomer.uid).isEqualTo(dao.uid);
+        });
+    }
 }

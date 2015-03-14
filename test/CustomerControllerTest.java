@@ -1,10 +1,13 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.CustomerController;
 import model.customer.Customer;
+import org.apache.http.entity.ContentType;
+import org.junit.Ignore;
 import org.junit.Test;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.Result;
+import play.test.FakeRequest;
 import play.test.WithApplication;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -41,5 +44,23 @@ public class CustomerControllerTest extends CustomerAPIBase{
         assertThat(node.isArray()).isTrue();
         assertThat(node.size()).isGreaterThanOrEqualTo(1);
         Logger.info(body);
+    }
+    @Test
+    public void testAcceptHeader() {
+        Logger.debug("-----------------------------------------------");
+        Logger.debug(new Object() {
+        }.getClass().getEnclosingMethod().getName());
+        Logger.debug("-----------------------------------------------");
+        FakeRequest request = new FakeRequest(GET, "/customers").
+                withHeader("Content-Type",ContentType.APPLICATION_JSON.toString())
+                .withHeader("Accept","application/vnd.customerapi+json; version=2");
+//        "application/vnd.helloworld+json; version=1"
+        Result result = route(request);
+//        assertThat(status(result)).isEqualTo(BAD_REQUEST);
+//        JsonNode node = Json.parse(contentAsString(result));
+//        assertThat(node).isNull();
+//        Logger.debug("response:" + Json.stringify(node));
+//        assertThat(contentType(result)).isEqualTo("application/json");
+//        assertThat(!headers(result).containsKey("Location"));
     }
 }

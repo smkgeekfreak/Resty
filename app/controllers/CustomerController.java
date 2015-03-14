@@ -12,8 +12,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by mbp-sm on 3/13/15.
@@ -25,8 +23,8 @@ import java.util.List;
         basePath="/customers-base"
 )
 public class CustomerController extends Controller {
-    @Path("/users")
-    @Produces({"application/json", "application/xml"})
+    @Path("/customers")
+    @Produces("application/json")
     @ApiOperation(
             value = "List of customers",
             nickname = "All customers",
@@ -41,10 +39,31 @@ public class CustomerController extends Controller {
     public static Result findAll() {
         return Results.ok(Json.toJson(CacheDAO.findAll()));
     }
+    @Path("/customers")
+    @Produces("application/json")
+    @ApiOperation(
+            value = "Return customer based on unique id",
+            nickname = "customer_by_uid",
+            notes = "Return customer based on the uid in the path",
+            response = Customer.class,
+            httpMethod = "GET",
+            position = 0)
+    @ApiResponses(value = {
+            @ApiResponse(code = Http.Status.OK, message = "Returning customer", response = Customer.class),
+            @ApiResponse(code = Http.Status.BAD_REQUEST, message = "Invalid endpoint"),
+            @ApiResponse(code = Http.Status.NOT_FOUND, message = "No customer found")})
+    @ApiImplicitParams(@ApiImplicitParam(dataType = "int", name = "id", paramType = "path"))
+    public static Result findById(Long id) {
+        Customer found = CacheDAO.find(id);
+        if( found == null )
+            return notFound("Customer could not be found for ("+id+")");
+        Logger.info("Customer= " + Json.toJson(found));
+        return Results.ok(Json.toJson(found));
+    }
     @POST
     @Path("/customers")
     @Consumes("application/json")
-    @Produces({"application/json", "application/xml"})
+    @Produces("application/json")
     @ApiOperation(
             value = "Create or modify a customer",
             nickname = "add_customer",

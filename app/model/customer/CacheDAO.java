@@ -26,7 +26,6 @@ public class CacheDAO extends Customer {
      */
     public boolean save() {
         Jedis jedis = RedisCache.getCache().getResource();
-        //Integer newId = this.id;
         boolean createNew = !(jedis.exists(UID_KEY + this.uid));
         Logger.debug("Requesting cache:" + this.companyName);
         if (this.uid == null || createNew ) {
@@ -45,7 +44,7 @@ public class CacheDAO extends Customer {
         return createNew;
     }
 
-    public static Customer find (Integer key) {
+    public static Customer find (Long key) {
         Jedis jedis = RedisCache.getCache().getResource();
         Logger.debug("Requesting cache:" + UID_KEY + key);
         String foundData = jedis.get(UID_KEY + key);
