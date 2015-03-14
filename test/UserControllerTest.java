@@ -31,15 +31,15 @@ public class UserControllerTest extends WithApplication {
 
     @AfterClass
     public static void tearDownClass() {
-        Redis.deleteKeys("test:*");
+        RedisUtil.deleteKeys("test:user*");
         //POOL.getResource().flushDB();
-        Redis.POOL.destroy();
+        RedisUtil.POOL.destroy();
     }
 
     @Before
     public void setUp() {
         startPlay();
-        Redis.POOL = RedisCache.getCache();
+        RedisUtil.POOL = RedisCache.getCache();
     }
 
     @After

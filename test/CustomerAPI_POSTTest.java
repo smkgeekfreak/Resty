@@ -8,17 +8,16 @@ import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static play.mvc.Http.Status.OK;
 import static play.test.Helpers.*;
 
 /**
  * Created by mbp-sm on 3/13/15.
  */
 @FixMethodOrder
-public class CustomerAPITest extends CustomerAPIBase{
+public class CustomerAPI_POSTTest extends CustomerAPIBase{
 
     @Test
-    public void testGETAllCustomers(){
+    public void testPOSTNewCustomer(){
         Logger.debug("------------------------");
         Logger.debug(new Object() {
         }.getClass().getEnclosingMethod().getName());
@@ -31,19 +30,25 @@ public class CustomerAPITest extends CustomerAPIBase{
                 "Sosa, Sammy",
                 "RTY9803-3234"
         );
-        model.customer.CacheDAO dao = Json.fromJson(Json.toJson(postBody), model.customer.CacheDAO.class);
-        dao.save();
-
         running(testServer(TEST_SERVER_PORT), () -> {
-            WSResponse wsResponse =WS.url("http://localhost:"+TEST_SERVER_PORT+"/customers").get().get(2000);
-            assertThat(wsResponse.getStatus()).isEqualTo(OK);
-            assertThat(wsResponse.getBody()).isNotEmpty();
+            JsonNode json = Json.toJson(postBody);
+            WSResponse wsResponse = WS.url("http://localhost:"+TEST_SERVER_PORT+"/customers").post(json).get(1000);
+            // Assert Response Status
+            assertThat(wsResponse.getStatus()).isEqualTo(CREATED);
+            // Assert Content Type is JSON
             assertThat(wsResponse.getHeader("Content-Type")).isEqualToIgnoringCase(ContentType.APPLICATION_JSON.toString());
+            // Assert Response Body has content
+            assertThat(wsResponse.getBody()).isNotEmpty();
+            // Deserialize body
             JsonNode body = Json.parse(wsResponse.getBody());
             Logger.debug("All customers returned:" + body);
-//            assertThat(contentType(result)).isEqualTo("application/json");
-            assertThat(body.isArray()).isTrue();
-            assertThat(body.size()).isGreaterThanOrEqualTo(1);
+            Customer retCustomer = Json.fromJson(body,Customer.class);
+            // Assert object can be created from JSON
+            assertThat(retCustomer).isNotNull();
+            // Assert valid uid returned
+            assertThat(retCustomer.uid).isGreaterThan(0);
+            // Assert the Location Header was returned with valid URI of the resource
+            assertThat(wsResponse.getHeader("Location")).isEqualTo("/customers/"+retCustomer.uid);
         });
     }
 }

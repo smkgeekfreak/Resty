@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * Created by mbp-sm on 3/13/15.
  */
-public class Redis {
+public class RedisUtil {
 
     public static JedisPool POOL;
     /**
