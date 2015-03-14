@@ -33,7 +33,7 @@ public class CacheDAO extends Customer {
             this.uid = (jedis.incr(UID_SEQ)).longValue();
             Logger.info("Created new id: " + this.uid);
         } else {
-            Logger.info("Didn't create new id: already had -" + this.uid);
+            Logger.info("Didn't create new id: already had: " + this.uid);
         }
 
         jedis.set(UID_KEY + this.uid, Json.toJson(this).toString());
