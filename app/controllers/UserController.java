@@ -1,19 +1,12 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import model.UserCache;
-import model.UserDAO;
-import play.*;
-import play.mvc.*;
-import play.libs.Json;
-import play.Logger;
-
-import java.util.*;
-
-import model.User;
-
 import com.wordnik.swagger.annotations.*;
-
+import model.User;
+import model.UserCache;
+import play.Logger;
+import play.libs.Json;
+import play.mvc.*;
 
 import javax.ws.rs.*;
 
