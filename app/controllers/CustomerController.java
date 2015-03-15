@@ -52,13 +52,41 @@ public class CustomerController extends Controller {
             @ApiResponse(code = Http.Status.OK, message = "Returning customer", response = Customer.class),
             @ApiResponse(code = Http.Status.BAD_REQUEST, message = "Invalid endpoint"),
             @ApiResponse(code = Http.Status.NOT_FOUND, message = "Customer could not be found for (id)")})
-    @ApiImplicitParams(@ApiImplicitParam(dataType = "int", name = "id", paramType = "path"))
+    @ApiImplicitParams(@ApiImplicitParam(dataType = "Long", name = "id", paramType = "path"))
     public static Result findById(Long id) {
         Customer found = CacheDAO.find(id);
         if( found == null )
             return notFound("Customer could not be found for ("+id+")");
         Logger.info("Customer= " + Json.toJson(found));
         return Results.ok(Json.toJson(found));
+    }
+    @Path("/customers/similiar")
+    @Produces("application/json")
+    @ApiOperation(
+            value = "Return customers whose profile is similar, based on the provided parameters",
+            nickname = "customer_similar",
+            notes = "Return a list of customers that are similar to the current customer (identified on the uid in the path)",
+            response = Customer.class,
+            httpMethod = "GET",
+            position = 0)
+    @ApiResponses(value = {
+            @ApiResponse(code = Http.Status.OK, message = "Returning customer", response = Customer.class),
+            @ApiResponse(code = Http.Status.BAD_REQUEST, message = "Invalid endpoint"),
+            @ApiResponse(code = Http.Status.NOT_FOUND, message = "Similar customers could not be found for (id)")})
+    @ApiImplicitParams({
+            @ApiImplicitParam(dataType = "Long", name = "id", paramType = "path"),
+            @ApiImplicitParam(dataType = "String", name = "matchCriteria", paramType = "query",
+                    allowableValues = "companyName,phoneNumber,contactName,customerRefNo")
+    })
+    public static Result findSimilar(Long id, String matchCriteria) {
+        //TODO: CHeck criteria ! null or blank
+        Logger.debug("Criteria = "+ matchCriteria);
+        //TODO: Split criteria by ',' put into Set and pass to match function
+//        Customer found = CacheDAO.match(matchCriteria);
+//        if( found == null )
+//            return notFound("Customer could not be found for ("+id+")");
+//        Logger.info("Customer= " + Json.toJson(found));
+        return Results.ok(Json.toJson(""));
     }
     @POST
     @Path("/customers")

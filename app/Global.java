@@ -61,6 +61,8 @@ public class Global extends GlobalSettings {
     public Handler onRouteRequest(Http.RequestHeader requestHeader) {
 //        Logger.debug("ACCEPTS HEADER" + Json.toJson(requestHeader.acceptedTypes()));
         Logger.debug("REQUEST HEADERS:" + requestHeader.acceptedTypes());
+        Logger.debug("REQUEST URI:" + requestHeader.uri());
+        Logger.debug("REQUEST QUERY:" + requestHeader.getQueryString("matchCriteria"));
 
 //        Logger.debug("before each request... " + requestHeader.host() + " for " + requestHeader.uri());
         //return (play.api.mvc.Handler) controllers.EdgeProxy.serviceRequest();
