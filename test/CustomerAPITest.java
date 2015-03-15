@@ -56,7 +56,7 @@ public class CustomerAPITest extends CustomerAPIBase{
         Customer postBody = new Customer(
                 -1L,
                 "Test Insert Customer",
-                "888-888-9999",
+                "120-888-9999",
                 "Sosa, Sammy",
                 "RTY9803-3234"
         );

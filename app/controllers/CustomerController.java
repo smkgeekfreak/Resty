@@ -12,6 +12,10 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by mbp-sm on 3/13/15.
@@ -82,11 +86,14 @@ public class CustomerController extends Controller {
         //TODO: CHeck criteria ! null or blank
         Logger.debug("Criteria = "+ matchCriteria);
         //TODO: Split criteria by ',' put into Set and pass to match function
-//        Customer found = CacheDAO.match(matchCriteria);
-//        if( found == null )
-//            return notFound("Customer could not be found for ("+id+")");
-//        Logger.info("Customer= " + Json.toJson(found));
-        return Results.ok(Json.toJson(""));
+        String[] splitCriteria = matchCriteria.split(",");
+        List<String> criteriaList = Arrays.asList(splitCriteria);
+        Logger.debug("Split Criteria = " +Json.toJson(matchCriteria.split(",")));
+        List<Customer> found = CacheDAO.variadicMatch(id, criteriaList);
+        if( found == null )
+            return notFound("Customer could not be found for ("+id+")");
+        Logger.info("Similar Customer= " + Json.toJson(found));
+        return Results.ok(Json.toJson(found));
     }
     @POST
     @Path("/customers")

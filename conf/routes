@@ -18,7 +18,7 @@ POST        /users                         controllers.UserController.create
 # Customers API
 GET         /api-docs/customers            controllers.ApiHelpController.getResource(path = "/customers")
 GET         /customers                     controllers.CustomerController.findAll()
-#GET         /customers/:id                 controllers.CustomerController.findById(id: Long)
+GET         /customers/:id                 controllers.CustomerController.findById(id: Long)
 GET         /customers/:id/similar        controllers.CustomerController.findSimilar(id: Long, matchCriteria: String ?= "companyName")
 POST        /customers                     controllers.CustomerController.post
 # Map static resources from the /public folder to the /assets URL path
