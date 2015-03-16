@@ -6,7 +6,7 @@
     </appender>
 
     <logger name="play" level="WARN" />
-    <logger name="application" level="DEBUG" />
+    <logger name="application" level="INFO" />
     <logger name="swagger" level="ERROR" />
     <logger name="com.wordnik.swagger" level="ERROR" />
 

@@ -91,7 +91,7 @@ public class CustomerController extends Controller {
         Logger.debug("Split Criteria = " +Json.toJson(matchCriteria.split(",")));
         List<Customer> found = CacheDAO.variadicMatch(id, criteriaList);
         if( found == null )
-            return notFound("Customer could not be found for ("+id+")");
+            return notFound("No similar customers found for ("+id+")");
         Logger.info("Similar Customer= " + Json.toJson(found));
         return Results.ok(Json.toJson(found));
     }

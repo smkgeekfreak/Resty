@@ -10,9 +10,11 @@ import redis.clients.jedis.ScanResult;
 
 import static java.util.stream.Collectors.*;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Created by mbp-sm on 3/14/15.
@@ -88,7 +90,7 @@ public class CacheDAO extends Customer {
         return objList;
     }
 
-    public static List<Customer> variadicMatch(Long uid, List criteria) {
+    public static List<Customer> variadicMatch(Long uid, List<String> criteria) {
         List<Customer> objList = new ArrayList<>();
         Jedis jedis = RedisCache.getCache().getResource();
         // Get the record to match values against
@@ -98,30 +100,70 @@ public class CacheDAO extends Customer {
         }
         Customer matchObj = Json.fromJson(Json.parse(matchData), Customer.class);
         // Get all records for these set of keys
-        Logger.debug("Requesting finding all " + UID_KEY);
+//        Logger.debug("Requesting finding all " + UID_KEY);
         Set<String> keys = jedis.keys(UID_KEY + "*");
-        //
-        Logger.debug("Found: " + keys.size());
-        //
-        // Iterate through all records
-//        List<Customer> newList criteria.stream().filter(c -> c.uid().equals(matchObj.uid)).collect(toList());
-//        keys.stream().filter(c.)
+//        Logger.debug("Found: " + keys.size()); //TODO: remove
+        // Iterate through all records and create a full list
         keys.forEach((key) -> {
-            Logger.debug("key: " + key);
+//            Logger.debug("key: " + key);
             String foundData = jedis.get(key);
             Customer foundObj = Json.fromJson(Json.parse(foundData), Customer.class);
-            Logger.debug("Found:obj " + Json.toJson(foundObj));
+//            Logger.debug("Found:obj " + Json.toJson(foundObj));
+            // Exclude the record being matched against the other records
             if (foundObj.uid != matchObj.uid) {
-                Logger.debug("Skipping " + foundObj.uid);
+//                Logger.debug("Adding" + foundObj.uid);
                 objList.add(foundObj);
             }
         });
-
-        //TODO: iterate over criteria and filter for each one
-        List<Customer> filteredList = objList.stream().filter(c -> c.companyName.equalsIgnoreCase(matchObj.companyName)).collect(toList());
+        //
+        // Iterate over criteria and filter
+        List<Customer> filteredList = objList;
+        for (String item : criteria) {
+            filteredList = filter(filteredList,matchObj,item);
+            Logger.debug("new list (" + filteredList.size()+ ")" +Json.toJson(filteredList));
+        };
 
         RedisCache.getCache().returnResource(jedis);
         return filteredList;
+    }
+
+    /**
+     * Filter a list based on specific criteria properites to compare with the provided match object's values.
+     * @param list
+     * @param matchObj
+     * @param criteria
+     * @return
+     */
+    private static List<Customer> filter(List<Customer> list, Customer matchObj, String criteria) {
+        try {
+            Object matchVal = matchObj.getClass().getDeclaredField(criteria).get(matchObj);
+            Logger.info("exclusion critera : " + criteria + "=" + matchVal);
+//            if (cust.getClass().getDeclaredField(criteria).get(cust).equals(matchVal)) {
+//
+//            } else {
+//                Logger.info("skipped: " + Json.toJson(cust));
+//            }
+        } catch (IllegalAccessException iae) {
+
+        } catch (NoSuchFieldException nsfe) {
+
+        }
+        switch (criteria) {
+            case "companyName": {
+                return list.stream().filter(c -> c.companyName.equalsIgnoreCase(matchObj.companyName)).collect(toList());
+            }
+            case "phoneNumber": {
+                return list.stream().filter(c -> c.phoneNumber.equalsIgnoreCase(matchObj.phoneNumber)).collect(toList());
+            }
+            case "contactName": {
+                return list.stream().filter(c -> c.contactName.equalsIgnoreCase(matchObj.contactName)).collect(toList());
+            }
+            case "customerRefNo": {
+                return list.stream().filter(c -> c.customerRefNo.equalsIgnoreCase(matchObj.customerRefNo)).collect(toList());
+            }
+            default:
+                return null;
+        }
     }
 
     /**
@@ -137,9 +179,9 @@ public class CacheDAO extends Customer {
         Logger.debug("Requesting cache:" + this.companyName);
         if (this.uid == null || createNew) {
             this.uid = (jedis.incr(UID_SEQ)).longValue();
-            Logger.info("Created new id: " + this.uid);
+            Logger.debug("Created new id: " + this.uid);
         } else {
-            Logger.info("Didn't create new id: already had: " + this.uid);
+            Logger.debug("Didn't create new id: already had: " + this.uid);
         }
 
         jedis.set(UID_KEY + this.uid, Json.toJson(this).toString());

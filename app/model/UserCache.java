@@ -32,10 +32,10 @@ public class UserCache extends User {
         Logger.debug("Requesting cache:" + this.name);
         if (this.id == null || createNew ) {
             this.id = (jedis.incr(ID_SEQ)).intValue();
-            Logger.info("Created new id: " + this.id);
+            Logger.debug("Created new id: " + this.id);
             //this.id = newId;
         } else {
-            Logger.info("Didn't create new id: already had -" + this.id);
+            Logger.debug("Didn't create new id: already had -" + this.id);
         }
 
         jedis.set(ID_KEY + this.id, Json.toJson(this).toString());
