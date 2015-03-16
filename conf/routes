@@ -19,8 +19,10 @@ POST        /users                         controllers.UserController.create
 GET         /api-docs/customers            controllers.ApiHelpController.getResource(path = "/customers")
 GET         /customers                     controllers.CustomerController.findAll()
 GET         /customers/:id                 controllers.CustomerController.findById(id: Long)
-GET         /customers/:id/similar        controllers.CustomerController.findSimilar(id: Long, matchCriteria: String ?= "companyName")
+GET         /customers/:id/similar         controllers.CustomerController.findSimilar(id: Long, matchCriteria: String ?= "companyName")
 POST        /customers                     controllers.CustomerController.post
+PUT         /customers                     controllers.CustomerController.post
+DELETE      /customers/:id                 controllers.CustomerController.delete(id: Long)
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                  controllers.Assets.at(path="/public", file)
 

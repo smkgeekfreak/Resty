@@ -146,4 +146,24 @@ public class CustomerController extends Controller {
             return status(EXPECTATION_FAILED );
         }
     }
+    @Path("/customers")
+    @Consumes("application/json")
+    @Produces("application/json")
+    @ApiOperation(
+            value = "Delete customer based on the provided uid",
+            nickname = "delete_customer",
+            notes = "Delete a customer identified on the uid in the path",
+            httpMethod = "DELETE",
+            position = 0)
+    @ApiResponses(value = {
+            @ApiResponse(code = Http.Status.NO_CONTENT, message = "Deleted customer")})
+    @ApiImplicitParams({
+            @ApiImplicitParam(dataType = "Long", name = "id", paramType = "path")
+    })
+    public static Result delete (Long id) {
+        boolean found = CacheDAO.delete(id);
+        if( !found )
+            return notFound("Customer could not be found for ("+id+")");
+        return Results.noContent();
+    }
 }

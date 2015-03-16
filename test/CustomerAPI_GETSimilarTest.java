@@ -51,7 +51,6 @@ public class CustomerAPI_GETSimilarTest extends CustomerAPIBase{
         doesntMatchOnPhoneDao.uid = -1L;//create new record that's exactly the same
         doesntMatchOnPhoneDao.save();
 
-        long uid = dao.uid;
         running(testServer(TEST_SERVER_PORT), () -> {
             WSResponse wsResponse = WS.url("http://localhost:" + TEST_SERVER_PORT + "/customers/" + matchUid +"/similar?matchCriteria=companyName,contactName,phoneNumber,customerRefNo").get().get(2000);
             // Assert Response Status

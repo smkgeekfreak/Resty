@@ -56,40 +56,6 @@ public class CacheDAO extends Customer {
         return objList;
     }
 
-    public static List<Customer> match(Long uid, List criteria) {
-        List<Customer> objList = new ArrayList<>();
-        Jedis jedis = RedisCache.getCache().getResource();
-        // Get the record to match values against
-        String matchData = jedis.get(UID_KEY + uid);
-        if (StringUtils.isNullOrEmpty(matchData)) {
-            return null;
-        }
-        Customer matchObj = Json.fromJson(Json.parse(matchData), Customer.class);
-        // Get all records for these set of keys
-        Logger.debug("Requesting finding all " + UID_KEY);
-        Set<String> keys = jedis.keys(UID_KEY + "*");
-        //
-        Logger.debug("Found: " + keys.size());
-        //
-        // Iterate through all records
-        for (String key : keys) {
-            Logger.debug("key: " + key);
-            String foundData = jedis.get(key);
-            Customer foundObj = Json.fromJson(Json.parse(foundData), Customer.class);
-            Logger.debug("Found:obj " + Json.toJson(foundObj));
-            // Skip the record to match
-            if (foundObj.uid == matchObj.uid) {
-                Logger.debug("Skipping " + foundObj.uid);
-                continue;
-            } else if (foundObj.companyName.equalsIgnoreCase(matchObj.companyName)) {
-                objList.add(foundObj);
-                Logger.debug("Added" + Json.toJson(foundObj));
-            }
-        }
-        RedisCache.getCache().returnResource(jedis);
-        return objList;
-    }
-
     public static List<Customer> variadicMatch(Long uid, List<String> criteria) {
         List<Customer> objList = new ArrayList<>();
         Jedis jedis = RedisCache.getCache().getResource();
@@ -191,5 +157,17 @@ public class CacheDAO extends Customer {
         Logger.debug("Test:obj " + Json.toJson(retObj)); //TODO: remove
         RedisCache.getCache().returnResource(jedis);
         return createNew;
+    }
+
+    public static boolean delete(Long key) {
+        Jedis jedis = RedisCache.getCache().getResource();
+        Logger.debug("Requesting delete :" + UID_KEY + key);
+        String foundData = jedis.get(UID_KEY + key);
+        if (StringUtils.isNullOrEmpty(foundData)) {
+            return false;
+        }
+        jedis.del(UID_KEY + key);
+        RedisCache.getCache().returnResource(jedis);
+        return true;
     }
 }
