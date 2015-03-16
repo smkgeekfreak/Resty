@@ -1,20 +1,22 @@
 package controllers;
 
-import play.*;
-import play.mvc.*;
-import play.Logger;
-
-import views.html.*;
+import play.mvc.Controller;
+import play.mvc.Result;
 
 public class Application extends Controller {
 
+    /**
+     * Redirect index directly to main API listing
+     * @return
+     */
     public static Result index() {
-        return ok(index.render("Your new application is ready."));
+        return temporaryRedirect("/api");
     }
-    public static Result info(){
-        Logger.info("info requested");
-        return ok(index.render("return info."));
-    }
+
+    /**
+     * Redirect to Swagger interactive API documentation pages
+     * @return
+     */
     public static Result api() {
         return redirect("/assets/swagger-ui/index.html");
     }

@@ -3,26 +3,18 @@
 # ~~~~
 
 # Global Swagger API Setup
-GET         /api-docs                      controllers.ApiHelpController.getResources
-GET         /api                           controllers.Application.api()
-# Home page
-GET         /                              controllers.Application.index()
-GET         /info                          controllers.Application.info()
-# Users API
-GET         /api-docs/users                controllers.ApiHelpController.getResource(path = "/users")
-GET         /users                         controllers.UserController.findAll
-GET         /users/:id                     controllers.UserController.findById(id: Integer)
-#GET        /user/:name           controllers.UserController.findByName(name: String)
-POST        /users                         controllers.UserController.create
-#PUT        /user/:id             controllers.UserController.update(id: Integer)
+GET           /api-docs                     controllers.ApiHelpController.getResources
+GET           /api                          controllers.Application.api()
+# Redirect to api index
+GET           /                             controllers.Application.index()
 # Customers API
-GET         /api-docs/customers            controllers.ApiHelpController.getResource(path = "/customers")
-GET         /customers                     controllers.CustomerController.findAll()
-GET         /customers/:id                 controllers.CustomerController.findById(id: Long)
-GET         /customers/:id/similar         controllers.CustomerController.findSimilar(id: Long, matchCriteria: String ?= "companyName")
-POST        /customers                     controllers.CustomerController.post
-PUT         /customers/:id                 controllers.CustomerController.put(id: Long)
-DELETE      /customers/:id                 controllers.CustomerController.delete(id: Long)
+GET           /api-docs/customers           controllers.ApiHelpController.getResource(path = "/customers")
+GET           /customers                    controllers.CustomerController.findAll()
+GET           /customers/:id                controllers.CustomerController.findById(id: Long)
+GET           /customers/:id/similar        controllers.CustomerController.findSimilar(id: Long, matchCriteria: String ?= "companyName")
+POST          /customers                    controllers.CustomerController.post
+PUT           /customers/:id                controllers.CustomerController.put(id: Long)
+DELETE        /customers/:id                controllers.CustomerController.delete(id: Long)
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                  controllers.Assets.at(path="/public", file)
+GET           /assets/*file                 controllers.Assets.at(path="/public", file)
 

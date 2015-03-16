@@ -9,16 +9,21 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import java.util.Set;
 
 /**
- * Created by mbp-sm on 3/10/15.
+ * Helper class to interact with Redis Pool.
  */
 public class RedisCache {
+
     private static JedisPool POOL = null;
+    /**
+     * Prefix is used to segregate keys for easier
+     * search and delete. Also used for distinguishing keys for
+     * testing and development.
+     */
     public static String ENV_PREFIX = "";
 
     public static JedisPool getCache() {
         // TODO: move this prefix code out
         if (Play.application().isTest()) {
-            Logger.debug("CACHE MODE = TEST Y");
             ENV_PREFIX = Play.application().configuration().getString("jedis.key.prefix.test");
         } else if (Play.application().isDev()) {
             Logger.debug("CACHE MODE = DEV");
@@ -51,7 +56,7 @@ public class RedisCache {
                 throw new Exception("Unable to get jedis resource!");
             }
             Set<String> names=jedis.keys(pattern);
-            Logger.warn("Found to delete: " + names.size());
+            Logger.debug("Found "+ names.size()+") to delete" );
 
             jedis.eval(String.format(DELETE_SCRIPT_IN_LUA, pattern));
         } catch (Exception exc) {
