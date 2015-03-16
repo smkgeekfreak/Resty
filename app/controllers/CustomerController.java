@@ -41,7 +41,11 @@ public class CustomerController extends Controller {
             @ApiResponse(code = Http.Status.OK, message = "Customer list", response = model.customer.Customer.class),
             @ApiResponse(code = Http.Status.NOT_FOUND, message = "No customers found")})
     public static Result findAll() {
-        return Results.ok(Json.toJson(CacheDAO.findAll()));
+        List<Customer> found = CacheDAO.findAll();
+        if( found == null || found.size() <= 0 )
+            return notFound("No customers found");
+        Logger.debug("Customer= " + Json.toJson(found));
+        return Results.ok(Json.toJson(found));
     }
     @Path("/customers")
     @Produces("application/json")
@@ -54,14 +58,13 @@ public class CustomerController extends Controller {
             position = 0)
     @ApiResponses(value = {
             @ApiResponse(code = Http.Status.OK, message = "Returning customer", response = Customer.class),
-            @ApiResponse(code = Http.Status.BAD_REQUEST, message = "Invalid endpoint"),
             @ApiResponse(code = Http.Status.NOT_FOUND, message = "Customer could not be found for (id)")})
     @ApiImplicitParams(@ApiImplicitParam(dataType = "Long", name = "id", paramType = "path"))
     public static Result findById(Long id) {
         Customer found = CacheDAO.find(id);
         if( found == null )
             return notFound("Customer could not be found for ("+id+")");
-        Logger.info("Customer= " + Json.toJson(found));
+        Logger.debug("Customer= " + Json.toJson(found));
         return Results.ok(Json.toJson(found));
     }
     @Path("/customers/similiar")
@@ -75,12 +78,11 @@ public class CustomerController extends Controller {
             position = 0)
     @ApiResponses(value = {
             @ApiResponse(code = Http.Status.OK, message = "Returning customer", response = Customer.class),
-            @ApiResponse(code = Http.Status.BAD_REQUEST, message = "Invalid endpoint"),
             @ApiResponse(code = Http.Status.NOT_FOUND, message = "Similar customers could not be found for (id)")})
     @ApiImplicitParams({
             @ApiImplicitParam(dataType = "Long", name = "id", paramType = "path"),
             @ApiImplicitParam(dataType = "String", name = "matchCriteria", paramType = "query",
-                    allowableValues = "companyName,phoneNumber,contactName,customerRefNo")
+                    allowableValues = "companyName,phoneNumber,contactName,customerRefNo", allowMultiple = true)
     })
     public static Result findSimilar(Long id, String matchCriteria) {
         //TODO: CHeck criteria ! null or blank
@@ -90,9 +92,9 @@ public class CustomerController extends Controller {
         List<String> criteriaList = Arrays.asList(splitCriteria);
         Logger.debug("Split Criteria = " +Json.toJson(matchCriteria.split(",")));
         List<Customer> found = CacheDAO.variadicMatch(id, criteriaList);
-        if( found == null )
+        if( found == null || found.size() <= 0)
             return notFound("No similar customers found for ("+id+")");
-        Logger.info("Similar Customer= " + Json.toJson(found));
+        Logger.info("Similar Customers= " + Json.toJson(found));
         return Results.ok(Json.toJson(found));
     }
     @POST
@@ -140,8 +142,8 @@ public class CustomerController extends Controller {
             response().setHeader("Location", annotatedPath + "/" +dao.uid);
             return status(returnCode, Json.toJson(dao));
         } catch( Exception e ) {
-            Logger.error("Caused: "+ Json.toJson(e.getMessage()));
-            return status(EXPECTATION_FAILED);
+            Logger.error("Caused by: "+ Json.toJson(e.getMessage()));
+            return status(EXPECTATION_FAILED );
         }
     }
 }
