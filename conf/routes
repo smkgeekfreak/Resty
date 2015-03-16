@@ -21,7 +21,7 @@ GET         /customers                     controllers.CustomerController.findAl
 GET         /customers/:id                 controllers.CustomerController.findById(id: Long)
 GET         /customers/:id/similar         controllers.CustomerController.findSimilar(id: Long, matchCriteria: String ?= "companyName")
 POST        /customers                     controllers.CustomerController.post
-PUT         /customers                     controllers.CustomerController.post
+PUT         /customers/:id                 controllers.CustomerController.put(id: Long)
 DELETE      /customers/:id                 controllers.CustomerController.delete(id: Long)
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                  controllers.Assets.at(path="/public", file)

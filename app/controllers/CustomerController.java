@@ -97,7 +97,6 @@ public class CustomerController extends Controller {
         Logger.info("Similar Customers= " + Json.toJson(found));
         return Results.ok(Json.toJson(found));
     }
-    @POST
     @Path("/customers")
     @Consumes("application/json")
     @Produces("application/json")
@@ -115,6 +114,7 @@ public class CustomerController extends Controller {
     @ApiResponses(value =
             {
                     @ApiResponse(code = Http.Status.CREATED, message = "Customer Created", response = Customer.class),
+                    @ApiResponse(code = Http.Status.OK, message = "Customer Updated", response = Customer.class),
                     @ApiResponse(code = Http.Status.BAD_REQUEST, message = ""),
                     @ApiResponse(code = Http.Status.EXPECTATION_FAILED, message = "Could not parse input"),
             }
@@ -149,6 +149,54 @@ public class CustomerController extends Controller {
     @Path("/customers")
     @Consumes("application/json")
     @Produces("application/json")
+    @ApiOperation(
+            value = "Modify an existing customer",
+            nickname = "update_customer",
+            notes = "Update an existing customer. " +
+                    "",
+            response = Customer.class,
+            httpMethod = "PUT",
+            position = 2)
+    @ApiResponses(value =
+            {
+                    @ApiResponse(code = Http.Status.OK, message = "Customer Created", response = Customer.class),
+                    @ApiResponse(code = Http.Status.BAD_REQUEST, message = ""),
+                    @ApiResponse(code = Http.Status.NOT_FOUND, message = "Similar customers could not be found for (id)"),
+                    @ApiResponse(code = Http.Status.EXPECTATION_FAILED, message = "Could not parse input"),
+            }
+    )
+    @BodyParser.Of(BodyParser.Json.class)
+    @ApiImplicitParams({
+            @ApiImplicitParam(dataType = "Long", name = "id", paramType = "path"),
+            @ApiImplicitParam(dataType = "model.customer.Customer", name = "customer_data", paramType = "body")
+    })
+    public static Result put(Long id) {
+        try {
+            int returnCode = OK;
+            Logger.debug("Request to update Customer" + request().body().asJson());
+            Logger.debug("headers = " + Json.toJson(request().headers()));
+
+            JsonNode json = request().body().asJson();
+            //TODO: Validation logic, there has to be a better way
+            if(json.findPath("companyName").asText().isEmpty() ) {
+                return badRequest("Company name not provided");
+            }
+            CacheDAO dao = Json.fromJson(json, CacheDAO.class);
+            // Force uid for customer to be the uid from the resource uri
+            dao.uid = id;
+            if (dao.save()) {
+                // If this returns true, then a new resource was created
+                // something went wrong. Needs to be deleted
+                CacheDAO.delete(dao.uid);
+                return notFound("Customer not found for id ("+ id + ")");
+            }
+            return status(returnCode, Json.toJson(dao));
+        } catch( Exception e ) {
+            Logger.error("Caused by: "+ Json.toJson(e.getMessage()));
+            return status(EXPECTATION_FAILED );
+        }
+    }
+    @Path("/customers")
     @ApiOperation(
             value = "Delete customer based on the provided uid",
             nickname = "delete_customer",
