@@ -1,7 +1,8 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import model.customer.Customer;
 import org.apache.http.entity.ContentType;
-import org.junit.*;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
 import play.Logger;
 import play.libs.Json;
 import play.libs.ws.WS;

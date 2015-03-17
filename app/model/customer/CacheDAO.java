@@ -5,39 +5,48 @@ import org.h2.util.StringUtils;
 import play.Logger;
 import play.libs.Json;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
 
-import static java.util.stream.Collectors.*;
-
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 /**
- * Created by mbp-sm on 3/14/15.
+ * Data access layer implementation for Customer based on a
+ * Redis Cache data store.
  */
 public class CacheDAO extends Customer {
+    /**
+     * Key used for generating new Customer uid's
+     */
     private static String UID_SEQ = RedisCache.ENV_PREFIX + "customer_seq";
+    /**
+     * Key prefix used to identify customer data indexed by uid
+     */
     private static String UID_KEY = RedisCache.ENV_PREFIX + "customer_uid:";
-    //
 
-    public static Customer find(Long key) {
+    /**
+     * Find a customer based on
+     * @param uid
+     * @return
+     */
+    public static Customer find(Long uid) {
         Jedis jedis = RedisCache.getCache().getResource();
-        Logger.debug("Requesting cache:" + UID_KEY + key);
-        String foundData = jedis.get(UID_KEY + key);
+        Logger.debug("Requesting cache:" + UID_KEY + uid);
+        String foundData = jedis.get(UID_KEY + uid);
         if (StringUtils.isNullOrEmpty(foundData)) {
             return null;
         }
-        Logger.debug("Found:str " + foundData);
         Customer foundObj = Json.fromJson(Json.parse(foundData), Customer.class);
-        Logger.debug("Found:obj " + Json.toJson(foundObj));
         RedisCache.getCache().returnResource(jedis);
         return foundObj;
     }
 
+    /**
+     *
+     * @return
+     */
     public static List<Customer> findAll() {
         List<Customer> objList = new ArrayList<>();
         Jedis jedis = RedisCache.getCache().getResource();
@@ -56,6 +65,12 @@ public class CacheDAO extends Customer {
         return objList;
     }
 
+    /**
+     * Match Customer records based on a variable list of criteria for comparison against a given Customer record.
+     * @param uid Identifies the Customer to compare criteria against
+     * @param criteria List of criteria fields as strings. Currently supports any combination of "companyName", "phoneNumber", "contactName", "customerRefNo"
+     * @return
+     */
     public static List<Customer> variadicMatch(Long uid, List<String> criteria) {
         List<Customer> objList = new ArrayList<>();
         Jedis jedis = RedisCache.getCache().getResource();
@@ -66,18 +81,13 @@ public class CacheDAO extends Customer {
         }
         Customer matchObj = Json.fromJson(Json.parse(matchData), Customer.class);
         // Get all records for these set of keys
-//        Logger.debug("Requesting finding all " + UID_KEY);
         Set<String> keys = jedis.keys(UID_KEY + "*");
-//        Logger.debug("Found: " + keys.size()); //TODO: remove
         // Iterate through all records and create a full list
         keys.forEach((key) -> {
-//            Logger.debug("key: " + key);
             String foundData = jedis.get(key);
             Customer foundObj = Json.fromJson(Json.parse(foundData), Customer.class);
-//            Logger.debug("Found:obj " + Json.toJson(foundObj));
             // Exclude the record being matched against the other records
             if (foundObj.uid != matchObj.uid) {
-//                Logger.debug("Adding" + foundObj.uid);
                 objList.add(foundObj);
             }
         });
@@ -94,26 +104,15 @@ public class CacheDAO extends Customer {
     }
 
     /**
-     * Filter a list based on specific criteria properites to compare with the provided match object's values.
-     * @param list
-     * @param matchObj
-     * @param criteria
+     * Filter a list based on specific criteria properties to compare with the provided match object's values.
+     * Currently supports
+     * @param list List of customers to compare against the "match" Customer
+     * @param matchObj Customer to match criteria from other Customers against
+     * @param criteria List of criteria strings. Currently supports any combination of "companyName", "phoneNumber", "contactName", "customerRefNo"
      * @return
      */
     private static List<Customer> filter(List<Customer> list, Customer matchObj, String criteria) {
-        try {
-            Object matchVal = matchObj.getClass().getDeclaredField(criteria).get(matchObj);
-            Logger.info("exclusion critera : " + criteria + "=" + matchVal);
-//            if (cust.getClass().getDeclaredField(criteria).get(cust).equals(matchVal)) {
-//
-//            } else {
-//                Logger.info("skipped: " + Json.toJson(cust));
-//            }
-        } catch (IllegalAccessException iae) {
-
-        } catch (NoSuchFieldException nsfe) {
-
-        }
+        // TODO: Can this logic be moved from a case statement to a dynamic model based on the criteria/field name convention?
         switch (criteria) {
             case "companyName": {
                 return list.stream().filter(c -> c.companyName.equalsIgnoreCase(matchObj.companyName)).collect(toList());
@@ -135,16 +134,17 @@ public class CacheDAO extends Customer {
     /**
      * Save current state to cache. If the uid is null a new uid will be generated from the
      * sequence and used to create a new record. If a record with the id already exists it
-     * will be updated with the current state of all information.
+     * will be updated with the current state of all information. This method is not static and
+     * depends on an existing instance of a Customer model for the values to save.
      *
      * @return false if already existed, true if new record was created
      */
     public boolean save() {
         Jedis jedis = RedisCache.getCache().getResource();
         boolean createNew = !(jedis.exists(UID_KEY + this.uid));
-        Logger.debug("Requesting cache:" + this.companyName);
+        Logger.debug("Requesting save:" + this.companyName);
         if (this.uid == null || createNew) {
-            this.uid = (jedis.incr(UID_SEQ)).longValue();
+            this.uid = jedis.incr(UID_SEQ);
             Logger.debug("Created new id: " + this.uid);
         } else {
             Logger.debug("Didn't create new id: already had: " + this.uid);
@@ -159,15 +159,19 @@ public class CacheDAO extends Customer {
         return createNew;
     }
 
-    public static boolean delete(Long key) {
+    /**
+     * Delete a customer by uid from the Cache
+     * @param uid Unique identify for a customer
+     * @return true if deleted, false if not found
+     */
+    public static boolean delete(Long uid) {
         Jedis jedis = RedisCache.getCache().getResource();
-        Logger.debug("Requesting delete :" + UID_KEY + key);
-        String foundData = jedis.get(UID_KEY + key);
-        if (StringUtils.isNullOrEmpty(foundData)) {
-            return false;
-        }
-        jedis.del(UID_KEY + key);
+        boolean exists =  jedis.exists(UID_KEY + uid);
+        Logger.debug("Requesting delete :" + UID_KEY + uid);
+        if (exists)
+            jedis.del(UID_KEY + uid);
+
         RedisCache.getCache().returnResource(jedis);
-        return true;
+        return exists;
     }
 }

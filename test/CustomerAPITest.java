@@ -1,7 +1,8 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import model.customer.Customer;
 import org.apache.http.entity.ContentType;
-import org.junit.*;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
 import play.Logger;
 import play.libs.Json;
 import play.libs.ws.WS;
@@ -41,7 +42,6 @@ public class CustomerAPITest extends CustomerAPIBase{
             assertThat(wsResponse.getHeader("Content-Type")).isEqualToIgnoringCase(ContentType.APPLICATION_JSON.toString());
             JsonNode body = Json.parse(wsResponse.getBody());
             Logger.debug("All customers returned:" + body);
-//            assertThat(contentType(result)).isEqualTo("application/json");
             assertThat(body.isArray()).isTrue();
             assertThat(body.size()).isGreaterThanOrEqualTo(1);
         });

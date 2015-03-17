@@ -6,7 +6,7 @@ import play.mvc.Result;
 public class Application extends Controller {
 
     /**
-     * Redirect index directly to main API listing
+     * Redirect index directly to main API listing, redirecting to API documentation
      * @return
      */
     public static Result index() {

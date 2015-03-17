@@ -7,7 +7,8 @@ import play.test.WithApplication;
 import util.RedisUtil;
 
 /**
- * Created by mbp-sm on 3/14/15.
+ * CustomerAPI Base class for testing to setup and teardown
+ * the Redis pool.
  */
 public class CustomerAPIBase extends WithApplication {
     protected static final int TEST_SERVER_PORT = 3334;

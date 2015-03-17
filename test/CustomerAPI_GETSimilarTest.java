@@ -10,7 +10,6 @@ import play.libs.ws.WSResponse;
 import util.RedisUtil;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static play.mvc.Http.Status.NOT_FOUND;
 import static play.mvc.Http.Status.OK;
 import static play.test.Helpers.running;
 import static play.test.Helpers.testServer;

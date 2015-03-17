@@ -1,6 +1,4 @@
-import com.fasterxml.jackson.databind.JsonNode;
 import model.customer.Customer;
-import org.apache.http.entity.ContentType;
 import org.junit.Test;
 import play.Logger;
 import play.libs.Json;
@@ -11,7 +9,6 @@ import util.RedisUtil;
 import static org.fest.assertions.Assertions.assertThat;
 import static play.mvc.Http.Status.NOT_FOUND;
 import static play.mvc.Http.Status.NO_CONTENT;
-import static play.mvc.Http.Status.OK;
 import static play.test.Helpers.running;
 import static play.test.Helpers.testServer;
 

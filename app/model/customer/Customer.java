@@ -3,16 +3,14 @@ package model.customer;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
-import java.math.BigInteger;
-
 /**
- * Created by mbp-sm on 3/13/15.
+ * DTO Representation of Customer model
  */
 @ApiModel("Customer")
 public class Customer {
     @ApiModelProperty(
             required = false,
-            notes = "Unique Id for a customer. Do not populate when lcreating a new customer",
+            notes = "Unique Id for a customer. Do not populate when creating a new customer",
             dataType = "Long"
     )
     public Long uid;
@@ -41,9 +39,10 @@ public class Customer {
     )
     public String customerRefNo;
 
-    public Customer() {}
+    public Customer() {
+    }
 
-    public Customer (
+    public Customer(
             final Long _uid,
             final String _companyName, final String _phoneNumber,
             final String _contactName, final String _customerRefNo) {

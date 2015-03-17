@@ -21,6 +21,17 @@ public class RedisCache {
      */
     public static String ENV_PREFIX = "";
 
+    /**
+     * Return the the Cache pool that callers can use to get a resource
+     * i.e. Jedis jedis = RedisCache.getCache().getResource(); and
+     * RedisCache.getCache().returnResource(jedis);
+     *
+     * Uses the application mode, e.g. DEV, TEST, PROD to assign a prefix to the keys
+     * that are created to assign in locating and deleting keys based on
+     * these contexts
+     *
+     * @return JedisPool static instance
+     */
     public static JedisPool getCache() {
         // TODO: move this prefix code out
         if (Play.application().isTest()) {
@@ -43,6 +54,10 @@ public class RedisCache {
         return POOL;
     }
 
+    /**
+     * Perform delete of Redis keys baked on provided pattern
+     * @param pattern
+     */
     public static void deleteKeys(String pattern) {
         final String DELETE_SCRIPT_IN_LUA = "local keys = redis.call('keys', '%s')" +
                 "  for i,k in ipairs(keys) do" +

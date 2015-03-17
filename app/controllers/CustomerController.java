@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.wordnik.swagger.annotations.*;
 import model.customer.CacheDAO;
 import model.customer.Customer;
+import org.h2.util.StringUtils;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.*;
@@ -67,12 +68,14 @@ public class CustomerController extends Controller {
         Logger.debug("Customer= " + Json.toJson(found));
         return Results.ok(Json.toJson(found));
     }
-    @Path("/customers/similiar")
+    @Path("/customers/similar")
     @Produces("application/json")
     @ApiOperation(
             value = "Return customers whose profile is similar, based on the provided parameters",
             nickname = "customer_similar",
-            notes = "Return a list of customers that are similar to the current customer (identified on the uid in the path)",
+            notes = "Return a list of customers that are similar to the current customer (identified on the uid in the " +
+                    "path). Comma separated string. Currently supports any combination " +
+                    "of \"companyName\", \"phoneNumber\", \"contactName\", \"customerRefNo\"",
             response = Customer.class,
             httpMethod = "GET",
             position = 0)
@@ -85,16 +88,14 @@ public class CustomerController extends Controller {
                     allowableValues = "companyName,phoneNumber,contactName,customerRefNo", allowMultiple = true)
     })
     public static Result findSimilar(Long id, String matchCriteria) {
-        //TODO: CHeck criteria ! null or blank
-        Logger.debug("Criteria = "+ matchCriteria);
-        //TODO: Split criteria by ',' put into Set and pass to match function
+        if (StringUtils.isNullOrEmpty(matchCriteria))
+            return notFound("No similar customers found for ("+id+")");
         String[] splitCriteria = matchCriteria.split(",");
         List<String> criteriaList = Arrays.asList(splitCriteria);
-        Logger.debug("Split Criteria = " +Json.toJson(matchCriteria.split(",")));
         List<Customer> found = CacheDAO.variadicMatch(id, criteriaList);
         if( found == null || found.size() <= 0)
             return notFound("No similar customers found for ("+id+")");
-        Logger.info("Similar Customers= " + Json.toJson(found));
+        Logger.debug("Similar Customers= " + Json.toJson(found));
         return Results.ok(Json.toJson(found));
     }
     @Path("/customers")
@@ -124,8 +125,7 @@ public class CustomerController extends Controller {
     public static Result post() {
         try {
             int returnCode = OK;
-            Logger.info("Request to create Customer" + request().body().asJson());
-            Logger.info("headers = " + Json.toJson(request().headers()));
+            Logger.debug("Request to create Customer" + request().body().asJson());
 
             JsonNode json = request().body().asJson();
             //TODO: Validation logic, there has to be a better way
@@ -133,12 +133,10 @@ public class CustomerController extends Controller {
                 return badRequest("Company name not provided");
             }
             CacheDAO dao = Json.fromJson(json, CacheDAO.class);
-            Logger.debug("attempting cache:" + Json.toJson(dao));
             if (dao.save()) {
                 returnCode = Http.Status.CREATED;
             }
             String annotatedPath = CustomerController.class.getMethod("post").getAnnotation(Path.class).value();
-            Logger.debug("annotation path:" + annotatedPath);
             response().setHeader("Location", annotatedPath + "/" +dao.uid);
             return status(returnCode, Json.toJson(dao));
         } catch( Exception e ) {
@@ -160,7 +158,7 @@ public class CustomerController extends Controller {
     @ApiResponses(value =
             {
                     @ApiResponse(code = Http.Status.OK, message = "Customer Created", response = Customer.class),
-                    @ApiResponse(code = Http.Status.BAD_REQUEST, message = ""),
+                    @ApiResponse(code = Http.Status.BAD_REQUEST, message = "Company name not provided"),
                     @ApiResponse(code = Http.Status.NOT_FOUND, message = "Similar customers could not be found for (id)"),
                     @ApiResponse(code = Http.Status.EXPECTATION_FAILED, message = "Could not parse input"),
             }

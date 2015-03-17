@@ -18,6 +18,7 @@ public class Global extends GlobalSettings {
         Logger.debug("REQUEST HEADERS:" + requestHeader.acceptedTypes());
         Logger.debug("REQUEST URI:" + requestHeader.uri());
         Logger.debug("REQUEST QUERY:" + requestHeader.getQueryString("matchCriteria"));
+        // TODO: Add accpet header, version processing logic
         return super.onRouteRequest(requestHeader);
     }
 }
